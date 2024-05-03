@@ -6,10 +6,12 @@ import Statistics from "./pages/Statistics.js";
 import ErrorPage from "./pages/ErrorPage.js";
 import Navbar from "./components/NavBar.js";
 import ContentContainer from "./components/ContentContainer.js";
+import ModalWindowCarMod from "./components/ModalWindowCarMod.js";
 
 const components = {
   navbar: Navbar,
   content: ContentContainer,
+  modal: ModalWindowCarMod,
 };
 
 const routes = {
@@ -20,106 +22,92 @@ const routes = {
   error: ErrorPage,
 };
 
-/* ----- spa init module --- */
-const mySPA = (function () {
-  /* ------- begin view -------- */
-  class ModuleView {
-    constructor(myModuleContainer, routes) {
-      this.myModuleContainer = myModuleContainer;
-      this.menu = this.myModuleContainer.querySelector("#mainmenu");
-      this.contentContainer = this.myModuleContainer.querySelector("#content");
-      this.routes = routes;
-    }
+class MainView {
+  constructor(mainContainer, routes) {
+    this.mainContainer = mainContainer;
+    this.menu = this.mainContainer.querySelector("#main-menu");
+    this.contentContainer = this.mainContainer.querySelector("#content");
+    this.routes = routes;
+  }
 
-    updateButtons(_currentPage) {
-      const menuLinks = this.menu.querySelectorAll(".mainmenu__link");
+  updateButtons(_currentPage) {
+    const menuLinks = this.menu.querySelectorAll(".main-menu__link");
 
-      for (let link of menuLinks) {
-        _currentPage === link.getAttribute("href").slice(1)
-          ? link.classList.add("active")
-          : link.classList.remove("active");
-      }
-    }
-
-    renderContent(_hashPageName) {
-      let routeName = "default";
-
-      if (_hashPageName.length > 0) {
-        routeName = _hashPageName in routes ? _hashPageName : "error";
-      }
-
-      window.document.title = routes[routeName].title;
-      this.contentContainer.innerHTML = routes[routeName].render(
-        `${routeName}-page`
-      );
-      this.updateButtons(routes[routeName].id);
+    for (let link of menuLinks) {
+      _currentPage === link.getAttribute("href").slice(1)
+        ? link.classList.add("active")
+        : link.classList.remove("active");
     }
   }
 
-  class ModuleModel {
-    constructor(myModuleView) {
-      this.myModuleView = myModuleView;
+  renderContent(_hashPageName) {
+    let routeName = "default";
+
+    if (_hashPageName.length > 0) {
+      routeName = _hashPageName in routes ? _hashPageName : "error";
     }
 
-    updateState(_pageName) {
-      this.myModuleView.renderContent(_pageName);
-    }
+    window.document.title = routes[routeName].title;
+    this.contentContainer.innerHTML = routes[routeName].render();
+    this.updateButtons(routes[routeName].id);
+  }
+}
+
+class MainModel {
+  constructor(view) {
+    this.view = view;
   }
 
-  /* -------- end model -------- */
-  /* ----- begin controller ---- */
+  updateState(_pageName) {
+    this.view.renderContent(_pageName);
+  }
+}
 
-  class ModuleController {
-    constructor(myModuleContainer, myModuleModel) {
-      this.myModuleContainer = myModuleContainer;
-      this.myModuleModel = myModuleModel;
-      this.addListeners();
-    }
-
-    addListeners() {
-      // вешаем слушателей на событие hashchange и кликам по пунктам меню
-      window.addEventListener("hashchange", () => this.updateState);
-
-      this.myModuleContainer
-        .querySelector("#mainmenu")
-        .addEventListener("click", (event) => {
-          event.preventDefault();
-          window.location.hash = event.target.getAttribute("href");
-          this.updateState();
-        });
-
-      this.updateState(); //первая отрисовка
-    }
-
-    updateState() {
-      const hashPageName = location.hash.slice(1).toLowerCase();
-      this.myModuleModel.updateState(hashPageName);
-    }
+class MainController {
+  constructor(mainContainer, model) {
+    this.mainContainer = mainContainer;
+    this.model = model;
+    this.addListeners();
   }
 
-  return {
-    init: function (root, routes, components) {
-      this.renderComponents(root, components);
+  addListeners() {
+    window.addEventListener("hashchange", () => this.updateState);
 
-      const view = new ModuleView(document.getElementById(root), routes);
-      const model = new ModuleModel(view);
-      const controller = new ModuleController(
-        document.getElementById(root),
-        model
-      );
-    },
+    this.mainContainer
+      .querySelector("#main-menu")
+      .addEventListener("click", (event) => {
+        event.preventDefault();
+        window.location.hash = event.target.getAttribute("href");
+        this.updateState();
+      });
 
-    renderComponents: function (root, components) {
-      const container = document.getElementById(root);
-      for (let item in components) {
-        if (components.hasOwnProperty(item)) {
-          container.innerHTML += components[item].render();
-        }
+    this.updateState(); //первая отрисовка
+  }
+
+  updateState() {
+    const hashPageName = location.hash.slice(1).toLowerCase();
+    this.model.updateState(hashPageName);
+  }
+}
+
+class Main {
+  constructor(mainContainer, components, routes) {
+    this.mainContainer = mainContainer;
+    this.renderComponents(components);
+    this.view = new MainView(this.mainContainer, routes);
+    this.model = new MainModel(this.view);
+    this.controller = new MainController(this.mainContainer, this.model);
+  }
+
+  renderComponents(components) {
+    for (let item in components) {
+      if (components.hasOwnProperty(item)) {
+        this.mainContainer.innerHTML += components[item].render();
       }
-    },
-  };
-})();
-/* ------ end app module ----- */
+    }
+  }
+}
 
-/*** --- init module --- ***/
-mySPA.init("spa", routes, components);
+const spa = new Main(document.getElementById("root"), components, routes);
+// console.log(spa);
+// console.log(spa.controller.myModuleContainer);

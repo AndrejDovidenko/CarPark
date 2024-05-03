@@ -8,7 +8,7 @@ const About = {
         <p>А здесь что-то как бы <strong>О нас</strong> или о них =)</p>
       </section>
     `;
-  }
+  },
 };
 
 export default About;

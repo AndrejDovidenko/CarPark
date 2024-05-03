@@ -8,7 +8,7 @@ const ErrorPage = {
         <p>Страница не найдена, попробуйте вернуться на <a href="#main">главную</a>.</p>
       </section>
     `;
-  }
+  },
 };
 
 export default ErrorPage;

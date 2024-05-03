@@ -1,3 +1,5 @@
+@import url(./_modalWindow.scss);
+
 :root {
   --main-bg-color: #fff;
   --color-text: #000;
@@ -39,7 +41,7 @@ body {
   text-align: center;
 }
 
-.mainmenu__list {
+.main-menu__list {
   padding: 0;
   margin: 0;
   list-style: none;
@@ -48,11 +50,11 @@ body {
   border-radius: var(--base-border-radius);
 }
 
-.mainmenu li {
+.main-menu li {
   list-style: none;
 }
 
-.mainmenu__link {
+.main-menu__link {
   display: block;
   padding: 10px 25px;
   color: var(--color-text);
@@ -60,13 +62,13 @@ body {
   text-decoration: none;
 }
 
-.mainmenu__link:hover {
+.main-menu__link:hover {
   text-decoration: none;
   background-color: var(--gray-dark);
   color: var(--white);
 }
 
-.mainmenu__link.active {
+.main-menu__link.active {
   text-decoration: none;
   background-color: var(--blue);
   color: var(--white);
