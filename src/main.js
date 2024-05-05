@@ -1,17 +1,24 @@
 import "normalize.css";
 import "./scss/style.scss";
+// import "./components/Firebase.js";
+// import { app, db, auth, createUser } from "./components/firebase.js";
+// import Firebase from "./components/firebase.js";
+import LoginForm from "./components/LoginForm.js";
 import Garage from "./pages/Garage.js";
 import About from "./pages/About.js";
 import Statistics from "./pages/Statistics.js";
 import ErrorPage from "./pages/ErrorPage.js";
 import Navbar from "./components/NavBar.js";
 import ContentContainer from "./components/ContentContainer.js";
-import ModalWindowCarMod from "./components/ModalWindowCarMod.js";
+// import ModalWindowCarMod from "./components/ModalWindowCarMod.js";
+// import firebase from "./components/firebase.js";
+import Firebase from "./components/Firebase.js";
+// import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const components = {
   navbar: Navbar,
   content: ContentContainer,
-  modal: ModalWindowCarMod,
+  // modal: ModalWindowCarMod,
 };
 
 const routes = {
@@ -74,12 +81,20 @@ class MainController {
     window.addEventListener("hashchange", () => this.updateState);
 
     this.mainContainer
-      .querySelector("#main-menu")
+      .querySelector(".main-menu")
       .addEventListener("click", (event) => {
         event.preventDefault();
         window.location.hash = event.target.getAttribute("href");
+
         this.updateState();
       });
+
+    this.mainContainer.addEventListener("click", (event) => {
+      const exit = event.target.closest(".exit");
+      if (exit) {
+        Firebase.logOut();
+      }
+    });
 
     this.updateState(); //первая отрисовка
   }
@@ -91,8 +106,22 @@ class MainController {
 }
 
 class Main {
-  constructor(mainContainer, components, routes) {
+  constructor(mainContainer) {
     this.mainContainer = mainContainer;
+    Firebase.monitorAuthState();
+    // this.renderLoginForm();
+    // this.renderLoginForm();
+    // this.renderComponents(components);
+    // this.openUserProfile();
+  }
+
+  renderLoginForm() {
+    // console.log(this.mainContainer);
+    this.mainContainer.innerHTML = LoginForm.render();
+  }
+
+  openUserProfile() {
+    this.mainContainer.innerHTML = "";
     this.renderComponents(components);
     this.view = new MainView(this.mainContainer, routes);
     this.model = new MainModel(this.view);
@@ -108,6 +137,5 @@ class Main {
   }
 }
 
-const spa = new Main(document.getElementById("root"), components, routes);
-// console.log(spa);
-// console.log(spa.controller.myModuleContainer);
+const spa = new Main(document.getElementById("root"));
+export default spa;

@@ -49,6 +49,10 @@ class ModalWindowView {
     this.container.classList.add("modal-window_open");
   }
 
+  close() {
+    this.container.classList.remove("modal-window_open");
+  }
+
   createOptions(arr, item) {
     arr.forEach((el) => {
       const option = document.createElement("option");
@@ -63,6 +67,10 @@ class ModalWindowView {
 
   setSelectedIndex(item, value) {
     item.selectedIndex = value;
+  }
+
+  createCar(data) {
+    CarList.view.createCarBlok(data);
   }
 }
 
@@ -81,6 +89,14 @@ class ModalWindowModel {
 
   setSelectedIndex(item, value) {
     this.view.setSelectedIndex(item, value);
+  }
+
+  closeModalWindow() {
+    this.view.close();
+  }
+
+  createCar(data) {
+    this.view.createCar(data);
   }
 }
 
@@ -117,6 +133,8 @@ class ModalWindowController {
         mileage: this.mileage.value,
       };
       console.log(data);
+      this.model.createCar(data);
+      this.model.closeModalWindow();
     }
   }
 
@@ -164,17 +182,19 @@ class ModalWindowController {
       }
     }
 
-    if (
-      this.selectBrand.value &&
-      this.selectModel.value &&
-      this.selectYear.value &&
-      this.inputColor.value &&
-      this.carPlate.value &&
-      this.mileage.value
-    ) {
-      this.model.setDisabled(false, this.buttonCreate);
-    } else {
-      this.model.setDisabled(true, this.buttonCreate);
+    if (document.querySelector(".modal-window")) {
+      if (
+        this.selectBrand?.value &&
+        this.selectModel?.value &&
+        this.selectYear?.value &&
+        this.inputColor?.value &&
+        this.carPlate?.value &&
+        this.mileage?.value
+      ) {
+        this.model.setDisabled(false, this.buttonCreate);
+      } else {
+        this.model.setDisabled(true, this.buttonCreate);
+      }
     }
   }
 }
