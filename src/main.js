@@ -3,6 +3,7 @@ import "./scss/style.scss";
 // import "./components/Firebase.js";
 // import { app, db, auth, createUser } from "./components/firebase.js";
 // import Firebase from "./components/firebase.js";
+import Firebase from "./components/FirebaseAPI.js";
 import LoginForm from "./components/LoginForm.js";
 import Garage from "./pages/Garage.js";
 import About from "./pages/About.js";
@@ -10,10 +11,7 @@ import Statistics from "./pages/Statistics.js";
 import ErrorPage from "./pages/ErrorPage.js";
 import Navbar from "./components/NavBar.js";
 import ContentContainer from "./components/ContentContainer.js";
-// import ModalWindowCarMod from "./components/ModalWindowCarMod.js";
-// import firebase from "./components/firebase.js";
-import Firebase from "./components/Firebase.js";
-// import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+// import CarList from "./components/CarList.js";
 
 const components = {
   navbar: Navbar,
@@ -102,17 +100,14 @@ class MainController {
   updateState() {
     const hashPageName = location.hash.slice(1).toLowerCase();
     this.model.updateState(hashPageName);
+    // console.log(Firebase.pathUserCars);
   }
 }
 
 class Main {
   constructor(mainContainer) {
     this.mainContainer = mainContainer;
-    Firebase.monitorAuthState();
-    // this.renderLoginForm();
-    // this.renderLoginForm();
-    // this.renderComponents(components);
-    // this.openUserProfile();
+    // Firebase.monitorAuthState();
   }
 
   renderLoginForm() {

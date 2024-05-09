@@ -1,6 +1,5 @@
-// import spa from "../main";
-import Firebase from "./Firebase";
-// <li><a class="main-menu__link" href="">Выход</a></li>
+import Firebase from "./FirebaseAPI";
+
 class LoginView {
   constructor() {
     this.html = `
@@ -49,23 +48,25 @@ class LoginController {
   }
 
   addListeners() {
-    this.root.addEventListener("click", async (event) => {
-      const buttonSignIn = event.target.closest(".button-sign-in");
-      const buttonSignUp = event.target.closest(".button-sign-up");
+    this.root.addEventListener("click", (event) => this.clickHandler(event));
+  }
 
-      const email = document.querySelector(".email");
-      const password = document.querySelector(".password");
+  clickHandler(event) {
+    const buttonSignIn = event.target.closest(".button-sign-in");
+    const buttonSignUp = event.target.closest(".button-sign-up");
 
-      if (buttonSignIn) {
-        Firebase.signInEmailPassword(email.value, password.value);
-        this.model.cleanForm(email, password);
-      }
+    const email = document.querySelector(".email");
+    const password = document.querySelector(".password");
 
-      if (buttonSignUp) {
-        Firebase.createAccount(email.value, password.value);
-        this.model.cleanForm(email, password);
-      }
-    });
+    if (buttonSignIn) {
+      Firebase.signInEmailPassword(email.value, password.value);
+      this.model.cleanForm(email, password);
+    }
+
+    if (buttonSignUp) {
+      Firebase.createAccount(email.value, password.value);
+      this.model.cleanForm(email, password);
+    }
   }
 }
 

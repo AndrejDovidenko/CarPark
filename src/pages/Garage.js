@@ -1,10 +1,11 @@
-// import GarageMVC from "../components/GarageMVC";
 import ModalWindowCarMod from "../components/ModalWindowCarMod";
 import CarList from "../components/CarList";
 
 class GarageView {
-  constructor() {
-    this.html = `
+  // constructor() {}
+
+  render() {
+    return `
     <section class="main-page">
       <h1>Garage</h1>
       <button class="btn main-page__btn ">Добавить авто
@@ -13,16 +14,10 @@ class GarageView {
     ${ModalWindowCarMod.render()}
     </section>
     `;
-    // this.render();
-  }
-
-  render() {
-    // this.renderCarList();
-    return this.html;
   }
 
   renderModalWindow() {
-    ModalWindowCarMod.view.show();
+    ModalWindowCarMod.view.showModalWindow();
   }
 
   renderProfileCar() {
@@ -75,5 +70,3 @@ class GarageMain {
 const Garage = new GarageMain();
 
 export default Garage;
-
-// export default GarageMain;

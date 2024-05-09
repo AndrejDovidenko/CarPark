@@ -1,15 +1,27 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
+import {
+  getFirestore,
+  collection,
+  getDoc,
+  getDocs,
+  setDoc,
+  doc,
+  query,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore/lite";
 import {
   getAuth,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   onAuthStateChanged,
-  logOut,
   signOut,
+  currentUser,
 } from "firebase/auth";
 import spa from "../main";
 import LoginForm from "./LoginForm";
+// import firebase from "firebase/compat/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCv0NijHKxa2raBAqVFVS5WoYdAA0iqLvU",
@@ -23,18 +35,57 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+const db = getFirestore(app);
 
 class FirebaseAPI {
-  constructor(app, auth) {
+  constructor(app, myAuth, db) {
     this.app = app;
-    this.auth = auth;
+    this.myAuth = myAuth;
+    this.db = db;
+    this.monitorAuthState();
+    this.pathUserCars = null;
+    this.pathUserNotes = null;
+    this.pathUserParts = null;
   }
+
+  async getItemsArr(path) {
+    const querySnapshot = await getDocs(query(collection(this.db, path)));
+
+    return querySnapshot;
+  }
+
+  async getItem(path, id) {
+    const docSnap = await getDoc(doc(this.db, `${path}/${id}`));
+
+    return docSnap.data();
+  }
+
+  async createItem(id, data = {}) {
+    await setDoc(doc(this.db, this.pathUserCars, id), data);
+  }
+
+  async deleteItem(id) {
+    await deleteDoc(doc(this.db, this.pathUserCars, id));
+  }
+
+  async createDocUser(path, id, data = {}) {
+    await setDoc(doc(this.db, path, id), data);
+  }
+
+  // async createCollectionUser(path, id, data = {}) {
+  //   await addDoc(collection(this.db, path, id), data);
+  // }
 
   async createAccount(email, password) {
     try {
-      await createUserWithEmailAndPassword(this.auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(
+        this.myAuth,
+        email,
+        password
+      );
 
-      this.signInEmailPassword(email, password);
+      await this.signInEmailPassword(email, password);
+      this.createDocUser("Users", userCredential.user.uid, {});
     } catch (error) {
       switch (error.code) {
         case "auth/invalid-email":
@@ -58,12 +109,10 @@ class FirebaseAPI {
   async signInEmailPassword(email, password) {
     try {
       const userCredential = await signInWithEmailAndPassword(
-        this.auth,
+        this.myAuth,
         email,
         password
       );
-
-      console.log(userCredential.user);
     } catch (error) {
       switch (error.code) {
         case "auth/invalid-email":
@@ -79,15 +128,18 @@ class FirebaseAPI {
     }
   }
 
-  async monitorAuthState() {
-    onAuthStateChanged(this.auth, (user) => {
+  monitorAuthState() {
+    onAuthStateChanged(this.myAuth, (user) => {
       if (user) {
         // User is signed in, see docs for a list of available properties
         // https://firebase.google.com/docs/reference/js/auth.user
+
+        // console.log(this);
+        this.pathUserCars = `Users/${user.uid}/cars`;
+        this.pathUserNotes = `Users/${user.uid}/notes`;
+        this.pathUserParts = `Users/${user.uid}/parts`;
+
         spa.openUserProfile();
-        console.log(user);
-        const uid = user.uid;
-        // ...
       } else {
         spa.renderLoginForm();
         LoginForm.showInfo("Введите логин и пароль что бы войти!");
@@ -99,10 +151,10 @@ class FirebaseAPI {
   }
 
   async logOut() {
-    await signOut(this.auth);
+    await signOut(this.myAuth);
   }
 }
 
-const Firebase = new FirebaseAPI(app, auth);
+const Firebase = new FirebaseAPI(app, auth, db);
 
 export default Firebase;

@@ -1,6 +1,7 @@
 import { OPTIONS } from "../constants/constants";
 import { ALL_YEARS } from "../constants/constants";
 import CarList from "./CarList";
+import Firebase from "./FirebaseAPI";
 
 class ModalWindowView {
   constructor() {
@@ -8,49 +9,68 @@ class ModalWindowView {
     this.selectBrand = null;
     this.selectModel = null;
     this.selectYear = null;
-
-    this.html = ` <div class="modal-window">
-    <label>Марка
-    <select class="select-brand"></select>
-  </label>
-  <label>Модель
-    <select class="select-model" disabled></select>
-  </label>
-  <label>Год
-    <select class="select-year" disabled></select>
-  </label>
-  <label>Цвет
-    <input type="color" class="input-color"/>
-  </label>
-  <label>Регистрационный номер
-    <input type="text" class="car-plate"/>
-  </label>
-  <label>Пробег
-    <input type="number" class="mileage"/>
-  </label>
-  <button class="btn button-create" disabled>Создать</button>
-    </div>`;
+    this.inputColor = null;
+    this.carPlate = null;
+    this.mileage = null;
+    this.buttonSave = null;
   }
 
   render() {
-    return this.html;
+    return ` <div class="modal-window">
+    <label>Марка
+    <select class="car-info-input select-brand"></select>
+  </label>
+  <label>Модель
+    <select class="car-info-input select-model" disabled></select>
+  </label>
+  <label>Год
+    <select class="car-info-input select-year" disabled></select>
+  </label>
+  <label>Цвет
+    <input type="color" class="car-info-input input-color"/>
+  </label>
+  <label>Регистрационный номер
+    <input type="text" class="car-info-input car-plate"/>
+  </label>
+  <label>Пробег
+    <input type="number" class="car-info-input mileage"/>
+  </label>
+  <button class="btn button-save" disabled>Сохранить</button>
+    </div>`;
   }
 
-  show() {
+  showModalWindow(data = null) {
     this.container = document.querySelector(".modal-window");
     this.selectBrand = document.querySelector(".select-brand");
     this.selectModel = document.querySelector(".select-model");
     this.selectYear = document.querySelector(".select-year");
+    this.inputColor = document.querySelector(".input-color");
+    this.carPlate = document.querySelector(".car-plate");
+    this.mileage = document.querySelector(".mileage");
+    this.buttonSave = document.querySelector(".button-save");
+    this.buttonSave.classList.remove("update");
 
     this.createOptions(OPTIONS.brands, this.selectBrand);
     this.createOptions(OPTIONS.models[0], this.selectModel);
     this.createOptions(ALL_YEARS, this.selectYear);
 
-    this.container.classList.add("modal-window_open");
-  }
+    if (data) {
+      this.selectModel.innerHTML = "";
+      this.createOptions(OPTIONS.models[data.brandIndex], this.selectModel);
 
-  close() {
-    this.container.classList.remove("modal-window_open");
+      this.setSelectedIndex(this.selectBrand, data.brandIndex);
+      this.setSelectedIndex(this.selectModel, data.modelIndex);
+      this.setSelectedIndex(this.selectYear, data.yearIndex);
+      this.inputColor.value = data.color;
+      this.carPlate.value = data.carPlate;
+      this.mileage.value = data.mileage;
+      this.setDisabled(false, this.selectModel);
+      this.setDisabled(false, this.selectYear);
+      this.buttonSave.classList.add("update");
+      this.buttonSave.setAttribute("data-id", data.id);
+    }
+
+    this.container.classList.add("modal-window_open");
   }
 
   createOptions(arr, item) {
@@ -69,8 +89,29 @@ class ModalWindowView {
     item.selectedIndex = value;
   }
 
-  createCar(data) {
-    CarList.view.createCarBlok(data);
+  renderCarList() {
+    CarList.render();
+  }
+
+  cleanModalWindow() {
+    const arr = this.container.querySelectorAll(".car-info-input");
+
+    arr.forEach((el) => {
+      if (el.tagName.toLowerCase() === "select") {
+        el.innerHTML = "";
+      } else if (el.type === "color") {
+        el.value = "#000000";
+      } else {
+        el.value = "";
+      }
+    });
+  }
+
+  closeModalWindow() {
+    this.setDisabled(true, this.buttonSave);
+    this.setDisabled(true, this.selectModel);
+    this.setDisabled(true, this.selectYear);
+    this.container.classList.remove("modal-window_open");
   }
 }
 
@@ -91,12 +132,28 @@ class ModalWindowModel {
     this.view.setSelectedIndex(item, value);
   }
 
-  closeModalWindow() {
-    this.view.close();
+  async createCar(data) {
+    if (!data.id) {
+      data.id = 1;
+    } else {
+      data.id += 1;
+    }
+
+    await Firebase.createItem(String(data.id), data);
+    this.view.renderCarList();
   }
 
-  createCar(data) {
-    this.view.createCar(data);
+  async updateCar(data) {
+    await Firebase.createItem(String(data.id), data);
+    this.view.renderCarList();
+  }
+
+  cleanModalWindow() {
+    this.view.cleanModalWindow();
+  }
+
+  closeModalWindow() {
+    this.view.closeModalWindow();
   }
 }
 
@@ -122,18 +179,33 @@ class ModalWindowController {
   }
 
   clickHandler(event) {
-    const button = event.target.closest(".button-create");
-    if (button) {
+    const buttonSave = event.target.closest(".button-save");
+    const arrCars = document.querySelectorAll(".car-block");
+    const lastId = arrCars[arrCars.length - 1]?.getAttribute("id");
+
+    if (buttonSave) {
       const data = {
         brand: this.selectBrand.value,
+        brandIndex: this.selectBrand.selectedIndex,
         model: this.selectModel.value,
+        modelIndex: this.selectModel.selectedIndex,
         year: this.selectYear.value,
+        yearIndex: this.selectYear.selectedIndex,
         color: this.inputColor.value,
         carPlate: this.carPlate.value,
         mileage: this.mileage.value,
+        id: Number(lastId),
       };
-      console.log(data);
-      this.model.createCar(data);
+
+      if (buttonSave.classList.contains("update")) {
+        data.id = buttonSave.getAttribute("data-id");
+
+        this.model.updateCar(data);
+      } else {
+        this.model.createCar(data);
+      }
+
+      this.model.cleanModalWindow();
       this.model.closeModalWindow();
     }
   }
@@ -143,7 +215,7 @@ class ModalWindowController {
     const clickSelectModel = event.target.closest(".select-model");
     const selectIndex = event.target.selectedIndex;
 
-    this.buttonCreate = document.querySelector(".button-create");
+    this.buttonSave = document.querySelector(".button-save");
 
     this.selectBrand = document.querySelector(".select-brand");
     this.selectModel = document.querySelector(".select-model");
@@ -184,16 +256,16 @@ class ModalWindowController {
 
     if (document.querySelector(".modal-window")) {
       if (
-        this.selectBrand?.value &&
-        this.selectModel?.value &&
-        this.selectYear?.value &&
-        this.inputColor?.value &&
-        this.carPlate?.value &&
-        this.mileage?.value
+        this.selectBrand.value &&
+        this.selectModel.value &&
+        this.selectYear.value &&
+        this.inputColor.value &&
+        this.carPlate.value &&
+        this.mileage.value
       ) {
-        this.model.setDisabled(false, this.buttonCreate);
+        this.model.setDisabled(false, this.buttonSave);
       } else {
-        this.model.setDisabled(true, this.buttonCreate);
+        this.model.setDisabled(true, this.buttonSave);
       }
     }
   }
