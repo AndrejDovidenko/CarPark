@@ -1,5 +1,6 @@
 import Firebase from "./FirebaseAPI";
 import ModalWindowCarMod from "./ModalWindowCarMod";
+import Garage from "../pages/Garage";
 
 class CarListView {
   constructor() {
@@ -20,12 +21,12 @@ class CarListView {
   render() {
     this.renderCars()
       .then((html) => {
-        document.querySelector("#car-list").innerHTML = html;
+        this.container = document.querySelector("#car-list");
+        this.container.innerHTML = html;
       })
       .catch((error) => {
         console.error(error);
-        document.querySelector("#car-list").innerHTML =
-          "<p>Ошибка при загрузке данных</p>";
+        this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
       });
     return '<div id="car-list" class="car-list">Loading cars...</div>';
   }
@@ -43,14 +44,27 @@ class CarListView {
   </div>`;
   }
 
+  renderCarBlock(data) {
+    const block = this.createCarBlock(data);
+    this.container.insertAdjacentHTML("beforeend", block);
+  }
+
+  updateCarBlock(data) {
+    console.log(this.container);
+    const block = this.container.querySelector(`#${data.id}`);
+    block.innerHTML = this.createCarBlock(data);
+  }
+
   removeElement(el) {
     el.remove();
   }
 
-  async showModalWindow(id) {
-    ModalWindowCarMod.view.showModalWindow(
-      await Firebase.getItem(Firebase.pathUserCars, id)
-    );
+  openModalWindow(data) {
+    ModalWindowCarMod.view.showModalWindow(data);
+  }
+
+  openCarProfile(data) {
+    Garage.view.renderCarProfile(data);
   }
 }
 
@@ -64,8 +78,15 @@ class CarListModel {
     Firebase.deleteItem(el.id);
   }
 
-  openModalWindow(id) {
-    this.view.showModalWindow(id);
+  async openModalWindow(id) {
+    const data = await Firebase.getItem(Firebase.pathUserCars, id);
+    this.view.openModalWindow(data);
+  }
+
+  async openCarProfile(id) {
+    const data = await Firebase.getItem(Firebase.pathUserCars, id);
+
+    this.view.openCarProfile(data);
   }
 }
 
@@ -90,6 +111,7 @@ class CarListController {
       switch (clickButton) {
         case null:
           console.log("block");
+          this.model.openCarProfile(clickBlock.id);
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);

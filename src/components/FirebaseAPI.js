@@ -10,6 +10,8 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  limit,
+  orderBy,
 } from "firebase/firestore/lite";
 import {
   getAuth,

@@ -89,8 +89,16 @@ class ModalWindowView {
     item.selectedIndex = value;
   }
 
-  renderCarList() {
-    CarList.render();
+  // renderCarList() {
+  //   CarList.render();
+  // }
+
+  renderCarBlock(data) {
+    CarList.view.renderCarBlock(data);
+  }
+
+  updateCarBlock(data) {
+    CarList.view.updateCarBlock(data);
   }
 
   cleanModalWindow() {
@@ -134,18 +142,19 @@ class ModalWindowModel {
 
   async createCar(data) {
     if (!data.id) {
-      data.id = 1;
+      data.id = "car1";
     } else {
-      data.id += 1;
+      const carIndex = Number(data.id[data.id.length - 1]) + 1;
+      data.id = "car" + carIndex;
     }
 
-    await Firebase.createItem(String(data.id), data);
-    this.view.renderCarList();
+    await Firebase.createItem(data.id, data);
+    this.view.renderCarBlock(data);
   }
 
   async updateCar(data) {
-    await Firebase.createItem(String(data.id), data);
-    this.view.renderCarList();
+    await Firebase.createItem(data.id, data);
+    this.view.updateCarBlock(data);
   }
 
   cleanModalWindow() {
@@ -194,7 +203,7 @@ class ModalWindowController {
         color: this.inputColor.value,
         carPlate: this.carPlate.value,
         mileage: this.mileage.value,
-        id: Number(lastId),
+        id: lastId,
       };
 
       if (buttonSave.classList.contains("update")) {

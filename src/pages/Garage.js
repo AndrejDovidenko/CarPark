@@ -1,5 +1,6 @@
 import ModalWindowCarMod from "../components/ModalWindowCarMod";
 import CarList from "../components/CarList";
+import CarProfile from "../components/CarProfile";
 
 class GarageView {
   // constructor() {}
@@ -20,11 +21,10 @@ class GarageView {
     ModalWindowCarMod.view.showModalWindow();
   }
 
-  renderProfileCar() {
-    //вызов мвс из другого модуля
+  renderCarProfile(data) {
+    const container = document.querySelector(".main-page");
+    container.innerHTML = CarProfile.render(data);
   }
-
-  renderCarList() {}
 }
 
 class GarageModel {
