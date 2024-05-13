@@ -16,7 +16,7 @@ class ModalWindowView {
   }
 
   render() {
-    return ` <div class="modal-window">
+    return ` <div class="modal-window car-mod">
     <label>Марка
     <select class="car-info-input select-brand"></select>
   </label>
@@ -40,7 +40,7 @@ class ModalWindowView {
   }
 
   showModalWindow(data = null) {
-    this.container = document.querySelector(".modal-window");
+    this.container = document.querySelector(".car-mod");
     this.selectBrand = document.querySelector(".select-brand");
     this.selectModel = document.querySelector(".select-model");
     this.selectYear = document.querySelector(".select-year");
@@ -177,7 +177,7 @@ class ModalWindowController {
     this.inputColor = null;
     this.carPlate = null;
     this.mileage = null;
-    this.buttonCreate = null;
+    this.buttonSave = null;
 
     this.addListeners();
   }
@@ -263,7 +263,7 @@ class ModalWindowController {
       }
     }
 
-    if (document.querySelector(".modal-window")) {
+    if (document.querySelector(".car-mod")) {
       if (
         this.selectBrand.value &&
         this.selectModel.value &&

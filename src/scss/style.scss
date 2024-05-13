@@ -1,5 +1,6 @@
 @import url(./_modalWindow.scss);
 @import url(./_loginForm.scss);
+@import url(./_carProfile.scss);
 
 :root {
   --main-bg-color: #fff;
@@ -79,6 +80,3 @@ body {
   padding: 1.5em 0;
 }
 
-.car-img {
-  width: 40%;
-}

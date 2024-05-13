@@ -1,11 +1,12 @@
 .modal-window {
   display: none;
   flex-direction: column;
-  width: 50vw;
-  height: 50vh;
+  width: 80vw;
+  height: 80vh;
   border: solid 2px;
   gap: 1rem;
   padding: 1rem;
+  background-color: aliceblue;
 }
 
 .modal-window_open {
