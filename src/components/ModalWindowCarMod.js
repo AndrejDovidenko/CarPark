@@ -144,8 +144,8 @@ class ModalWindowModel {
     if (!data.id) {
       data.id = "car1";
     } else {
-      const carIndex = Number(data.id[data.id.length - 1]) + 1;
-      data.id = "car" + carIndex;
+      const index = Number(data.id[data.id.length - 1]) + 1;
+      data.id = "car" + index;
     }
 
     await Firebase.createItem(data.id, data);

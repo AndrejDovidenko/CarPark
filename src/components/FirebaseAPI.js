@@ -51,9 +51,11 @@ class FirebaseAPI {
   }
 
   async getItemsArr(path) {
-    const querySnapshot = await getDocs(query(collection(this.db, path)));
+    const snapshot = await getDocs(query(collection(this.db, path)));
 
-    return querySnapshot;
+    // console.log();
+    // console.log(x);
+    return snapshot;
   }
 
   async getItem(path, id) {
@@ -62,12 +64,12 @@ class FirebaseAPI {
     return docSnap.data();
   }
 
-  async createItem(id, data = {}) {
-    await setDoc(doc(this.db, this.pathUserCars, id), data);
+  async createItem(id, data = {}, path = this.pathUserCars) {
+    await setDoc(doc(this.db, path, id), data);
   }
 
-  async deleteItem(id) {
-    await deleteDoc(doc(this.db, this.pathUserCars, id));
+  async deleteItem(id, path = this.pathUserCars) {
+    await deleteDoc(doc(this.db, path, id));
   }
 
   async createDocUser(path, id, data = {}) {

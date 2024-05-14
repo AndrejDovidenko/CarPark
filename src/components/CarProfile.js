@@ -1,24 +1,21 @@
 import carImgSvg from "../img/car.svg";
 import { generateSvg } from "../constants/generateSVG";
 import ModalWindowNoteMod from "./ModalWindowNoteMod";
+import Firebase from "./FirebaseAPI";
+import NoteList from "./NoteList";
 
 class CarProfileView {
   constructor() {
     this.carSvg = generateSvg(carImgSvg).querySelector("svg");
+    this.container = null;
+    this.partsList = null;
   }
 
   render(data) {
-    // const svg = new DocumentFragment();
-    // const div = document.createElement("div");
-    // div.innerHTML = carImgSvg;
-    // svg.append(div);
-
-    // console.log(svg);
     this.carSvg.style.fill = data.color;
 
-    // console.log(generateSvg(carImgSvg));
-    return `<section class="profile">
-    <div class="car-info" id="${data.id}">
+    return `<section class="profile" id="${data.id}">
+    <div class="car-info">
     <div><h1>${data.brand} ${data.model}</h1>
     <p>Год:<span>${data.year}</span></p>
     <p>Цвет:<span>${data.color}</span></p>
@@ -28,40 +25,42 @@ class CarProfileView {
     <div class="car-img"> ${this.carSvg.outerHTML}</div>
     </div>
     <div class="profile-control-panel">
-    <button class = "btn ">История</button>
-    <button class = "btn ">Установленные запчасти</button>
+    <button class = "btn history">История</button>
+    <button class = "btn installed-parts">Установленные запчасти</button>
     <button class = "btn add-note ">Добавить запись</button>
     </div>
-    <div class="note-list"></div>
+   
+    ${NoteList.render(data.id)}
     ${ModalWindowNoteMod.render()}
     </section>`;
   }
 
+  createPartsListItem(data) {
+    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span></li>`;
+  }
+
   openModalWindow() {
-    // console.log(444);
     ModalWindowNoteMod.view.showModalWindow();
   }
 
-  createNoteBlock(data) {
-    return `<div class="note-block">
- <p>${data.description}</p>
- <p>Стоимость: ${data.cost}</p>
- <p>Пробег: ${data.mileage}</p>
- ${data.list} 
- <button class="btn remove-note">Удалить</button>
- <button class="btn edit-note">Изменить</button>
-  </div>`;
+  renderNoteList(profileId) {
+    this.partsList.remove();
+    const list = `<div class="note-list" id ="note-list"></div>`;
+    this.container.insertAdjacentHTML("beforeend", list);
+    NoteList.render(profileId);
   }
 
-  renderNoteBlock(data) {
-    const container = document.querySelector(".note-list");
-    const block = this.createNoteBlock(data);
-    container.insertAdjacentHTML("beforeend", block);
-    // console.log(block);
-  }
+  renderParts(snapshot) {
+    this.container = document.querySelector(".profile");
+    this.partsList = document.createElement("ol");
+    const noteList = document.querySelector(".note-list");
+    noteList.remove();
 
-  removeItem(item) {
-    item.remove();
+    snapshot.forEach((el) => {
+      this.partsList.innerHTML += this.createPartsListItem(el.data());
+    });
+
+    this.container.append(this.partsList);
   }
 }
 
@@ -74,8 +73,16 @@ class CarProfileModel {
     this.view.openModalWindow();
   }
 
-  removeItem(item) {
-    this.view.removeItem(item);
+  async showParts(profileId) {
+    const snapshot = await Firebase.getItemsArr(
+      `${Firebase.pathUserCars}/${profileId}/parts`
+    );
+
+    this.view.renderParts(snapshot);
+  }
+
+  renderNoteList(profileId) {
+    this.view.renderNoteList(profileId);
   }
 }
 
@@ -83,23 +90,36 @@ class CarProfileController {
   constructor(model, root) {
     this.root = root;
     this.model = model;
+    this.profileId = null;
     this.addListeners();
   }
 
   addListeners() {
-    this.root.addEventListener("click", (event) => {
-      const buttonAdd = event.target.closest(".add-note");
-      const removeNote = event.target.closest(".remove-note");
-      if (buttonAdd) {
-        // console.log(222);
-        this.model.openModalWindow();
-      }
+    this.root.addEventListener("click", (event) => this.clickHandler(event));
+  }
 
-      if (removeNote) {
-        const item = event.target.closest(".note-block");
-        this.model.removeItem(item);
+  clickHandler(event) {
+    this.profileId = document.querySelector(".profile")?.id;
+    const clickBlock = event.target.closest(".profile-control-panel");
+    const addNote = event.target.closest(".add-note");
+    const installedParts = event.target.closest(".installed-parts");
+    const history = event.target.closest(".history");
+    const clickButton = history || installedParts || addNote;
+
+    if (clickBlock) {
+      switch (clickButton) {
+        case history:
+          // console.log("history");
+          this.model.renderNoteList(this.profileId);
+          break;
+        case installedParts:
+          this.model.showParts(this.profileId);
+          break;
+        case addNote:
+          this.model.openModalWindow();
+          break;
       }
-    });
+    }
   }
 }
 

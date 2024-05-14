@@ -19,6 +19,7 @@ class CarListView {
   }
 
   render() {
+    // this.a();
     this.renderCars()
       .then((html) => {
         this.container = document.querySelector("#car-list");
@@ -50,9 +51,11 @@ class CarListView {
   }
 
   updateCarBlock(data) {
-    console.log(this.container);
     const block = this.container.querySelector(`#${data.id}`);
-    block.innerHTML = this.createCarBlock(data);
+    const newBlock = new DOMParser()
+      .parseFromString(this.createCarBlock(data), "text/html")
+      .querySelector(".car-block");
+    block.replaceWith(newBlock);
   }
 
   removeElement(el) {
@@ -110,7 +113,7 @@ class CarListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          console.log("block");
+          // console.log("block");
           this.model.openCarProfile(clickBlock.id);
           break;
         case buttonRemove:
@@ -143,3 +146,17 @@ class CarListMain {
 const CarList = new CarListMain();
 
 export default CarList;
+
+// async a() {
+//   const snapshot = await Firebase.getItemsArr(Firebase.pathUserCars);
+//   let arr = [];
+//   snapshot.forEach((el) => arr.push(el.data().id));
+
+//   for (let i = 0; arr.length > i; i++) {
+//     const snap = await Firebase.getItemsArr(
+//       `${Firebase.pathUserCars}/${arr[i]}/parts`
+//     );
+
+//     console.log(snap.docs);
+//   }
+// }

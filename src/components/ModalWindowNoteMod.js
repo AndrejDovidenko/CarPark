@@ -1,14 +1,24 @@
+// import { Timestamp } from "firebase/firestore";
 import CarProfile from "./CarProfile";
+import Firebase from "./FirebaseAPI";
+import NoteList from "./NoteList";
 
 class NoteModView {
-  constructor(date) {
-    this.date = date;
+  constructor() {
+    // this.date = date;
     this.container = null;
+    this.description = null;
+    this.costWork = null;
+    this.mileage = null;
+    this.buttonSave = null;
+    this.partsList = null;
+    // this.addParts = null;
   }
+
   render() {
     return ` <div class="modal-window note-mod">
     <div class="info-block">
-    <h2 class="date">${this.date}</h2>
+    <h2 class="date">${new Date().toDateString()}</h2>
     <label> Выполненые работы:
     <input type="textarea" class="info-work-input description"/>
   </label>
@@ -39,8 +49,40 @@ class NoteModView {
     </div>`;
   }
 
-  showModalWindow() {
+  showModalWindow(data = null) {
     this.container = document.querySelector(".note-mod");
+    this.description = document.querySelector(".description");
+    this.costWork = document.querySelector(".cost-work");
+    this.mileage = document.querySelector(".mileage");
+    this.partsList = this.container.querySelector(".parts-list");
+    this.buttonSave = document.querySelector(".button-save-note");
+    // this.addParts = document.querySelector(".add-parts");
+
+    if (data) {
+      const string = data.list;
+      const newPartsList = new DOMParser()
+        .parseFromString(string, "text/html")
+        .querySelector(".parts-list");
+
+      const arr = newPartsList.querySelectorAll("li");
+
+      arr.forEach((el) =>
+        el.insertAdjacentHTML(
+          "beforeend",
+          `<button class="btn button-remove">Удалить</button>`
+        )
+      );
+
+      this.description.value = data.description;
+      this.costWork.value = data.cost;
+      this.mileage.value = data.mileage;
+
+      this.buttonSave.classList.add("update");
+      this.buttonSave.setAttribute("data-id", data.id);
+      this.partsList.replaceWith(newPartsList);
+
+      // this.setDisabled(false, this.buttonSave);
+    }
 
     this.container.classList.add("modal-window_open");
   }
@@ -50,7 +92,7 @@ class NoteModView {
   }
 
   createPartsListItem(data) {
-    return `<li class= "list-item"><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span>
+    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span>
     <button class="btn button-remove">Удалить</button></li>
     `;
   }
@@ -77,10 +119,17 @@ class NoteModView {
   }
 
   renderNoteBlock(data) {
-    CarProfile.view.renderNoteBlock(data);
+    NoteList.view.renderNoteBlock(data);
+    // CarProfile.view.renderNoteBlock(data);
+  }
+
+  updateNoteBlock(data) {
+    NoteList.view.updateNoteBlock(data);
   }
 
   closeModalWindow() {
+    this.setDisabled(true, this.buttonSave);
+    // this.setDisabled(true, this.addParts);
     this.container.classList.remove("modal-window_open");
   }
 
@@ -108,12 +157,58 @@ class NoteModModel {
     this.view.renderPartsListItem(data);
   }
 
-  removeItem(item) {
-    this.view.removeItem(item);
+  async createPart(data) {
+    const snapshot = await Firebase.getItemsArr(
+      `${Firebase.pathUserCars}/${data.profileId}/parts`
+    );
+    const lastId = snapshot.docs[snapshot.docs.length - 1]?.id;
+    // console.log(lastId);
+    if (!lastId) {
+      data.id = "part1";
+    } else {
+      const index = Number(lastId[lastId.length - 1]) + 1;
+      data.id = "part" + index;
+    }
+
+    await Firebase.createItem(
+      data.id,
+      data,
+      `${Firebase.pathUserCars}/${data.profileId}/parts`
+    );
+    // this.view.createPart(data);
+    this.createPartsListItem(data);
   }
 
-  createNote(data) {
+  removeItem(item, profileId) {
+    this.view.removeItem(item);
+    Firebase.deleteItem(item.id, `${Firebase.pathUserCars}/${profileId}/parts`);
+  }
+
+  async createNote(data) {
+    if (!data.id) {
+      data.id = "note1";
+    } else {
+      const index = Number(data.id[data.id.length - 1]) + 1;
+      data.id = "note" + index;
+    }
+
+    await Firebase.createItem(
+      data.id,
+      data,
+      `${Firebase.pathUserCars}/${data.profileId}/notes`
+    );
+
     this.view.renderNoteBlock(data);
+  }
+
+  async updateNote(data) {
+    await Firebase.createItem(
+      data.id,
+      data,
+      `${Firebase.pathUserCars}/${data.profileId}/notes`
+    );
+
+    this.view.updateNoteBlock(data);
   }
 
   closeModalWindow() {
@@ -142,6 +237,8 @@ class NoteModController {
     this.buttonSave = null;
 
     this.container = null;
+
+    this.profileId = null;
 
     this.addListeners();
   }
@@ -187,6 +284,10 @@ class NoteModController {
     const buttonAdd = event.target.closest(".add-parts");
     const buttonRemove = event.target.closest(".button-remove");
     const buttonSave = event.target.closest(".button-save-note");
+    const arrNotes = document.querySelectorAll(".note-block");
+    const lastId = arrNotes[arrNotes.length - 1]?.getAttribute("id");
+
+    this.profileId = document.querySelector(".profile")?.id;
 
     if (buttonAdd) {
       const data = {
@@ -194,15 +295,19 @@ class NoteModController {
         name: this.partsName.value,
         cost: this.costParts.value,
         brand: this.partsBrand.value,
+        profileId: this.profileId,
+        timestamp: Date.now(),
       };
 
-      this.model.createPartsListItem(data);
+      // this.model.createPartsListItem(data);
+      this.model.createPart(data);
+      this.model.setDisabled(true, this.buttonAdd);
     }
 
     if (buttonRemove) {
       const item = event.target.closest(".list-item");
 
-      this.model.removeItem(item);
+      this.model.removeItem(item, this.profileId);
     }
 
     if (buttonSave) {
@@ -216,19 +321,30 @@ class NoteModController {
         cost: this.costWork.value,
         mileage: this.mileage.value,
         list: partsList.outerHTML,
+        profileId: this.profileId,
+        timestamp: Date.now(),
+        id: lastId,
       };
 
-      this.model.createNote(data);
+      if (buttonSave.classList.contains("update")) {
+        data.id = buttonSave.getAttribute("data-id");
+
+        this.model.updateNote(data);
+      } else {
+        this.model.createNote(data);
+      }
+
+      // this.model.createNote(data);
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
-      this.model.setDisabled(true, buttonSave);
+      // this.model.setDisabled(true, buttonSave);
     }
   }
 }
 
 class NoteModMain {
   constructor() {
-    this.view = new NoteModView(new Date());
+    this.view = new NoteModView();
     this.model = new NoteModModel(this.view);
     this.controller = new NoteModController(
       this.model,
