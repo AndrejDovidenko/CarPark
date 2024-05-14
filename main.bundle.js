@@ -20469,6 +20469,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
 /* harmony import */ var _ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ModalWindowCarMod */ "./src/components/ModalWindowCarMod.js");
+/* harmony import */ var _pages_Garage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../pages/Garage */ "./src/pages/Garage.js");
+
 
 
 class CarListView {
@@ -20484,11 +20486,13 @@ class CarListView {
     return html;
   }
   render() {
+    // this.a();
     this.renderCars().then(html => {
-      document.querySelector("#car-list").innerHTML = html;
+      this.container = document.querySelector("#car-list");
+      this.container.innerHTML = html;
     }).catch(error => {
       console.error(error);
-      document.querySelector("#car-list").innerHTML = "<p>Ошибка при загрузке данных</p>";
+      this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
     });
     return '<div id="car-list" class="car-list">Loading cars...</div>';
   }
@@ -20504,11 +20508,23 @@ class CarListView {
     <button class="btn edit">Изменить</button>
   </div>`;
   }
+  renderCarBlock(data) {
+    const block = this.createCarBlock(data);
+    this.container.insertAdjacentHTML("beforeend", block);
+  }
+  updateCarBlock(data) {
+    const block = this.container.querySelector(`#${data.id}`);
+    const newBlock = new DOMParser().parseFromString(this.createCarBlock(data), "text/html").querySelector(".car-block");
+    block.replaceWith(newBlock);
+  }
   removeElement(el) {
     el.remove();
   }
-  async showModalWindow(id) {
-    _ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_1__["default"].view.showModalWindow(await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItem(_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars, id));
+  openModalWindow(data) {
+    _ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_1__["default"].view.showModalWindow(data);
+  }
+  openCarProfile(data) {
+    _pages_Garage__WEBPACK_IMPORTED_MODULE_2__["default"].view.renderCarProfile(data);
   }
 }
 class CarListModel {
@@ -20519,8 +20535,13 @@ class CarListModel {
     this.view.removeElement(el);
     _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].deleteItem(el.id);
   }
-  openModalWindow(id) {
-    this.view.showModalWindow(id);
+  async openModalWindow(id) {
+    const data = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItem(_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars, id);
+    this.view.openModalWindow(data);
+  }
+  async openCarProfile(id) {
+    const data = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItem(_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars, id);
+    this.view.openCarProfile(data);
   }
 }
 class CarListController {
@@ -20540,7 +20561,8 @@ class CarListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          console.log("block");
+          // console.log("block");
+          this.model.openCarProfile(clickBlock.id);
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);
@@ -20564,6 +20586,154 @@ class CarListMain {
 }
 const CarList = new CarListMain();
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CarList);
+
+// async a() {
+//   const snapshot = await Firebase.getItemsArr(Firebase.pathUserCars);
+//   let arr = [];
+//   snapshot.forEach((el) => arr.push(el.data().id));
+
+//   for (let i = 0; arr.length > i; i++) {
+//     const snap = await Firebase.getItemsArr(
+//       `${Firebase.pathUserCars}/${arr[i]}/parts`
+//     );
+
+//     console.log(snap.docs);
+//   }
+// }
+
+/***/ }),
+
+/***/ "./src/components/CarProfile.js":
+/*!**************************************!*\
+  !*** ./src/components/CarProfile.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _img_car_svg__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../img/car.svg */ "./src/img/car.svg");
+/* harmony import */ var _constants_generateSVG__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../constants/generateSVG */ "./src/constants/generateSVG.js");
+/* harmony import */ var _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ModalWindowNoteMod */ "./src/components/ModalWindowNoteMod.js");
+/* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
+/* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
+
+
+
+
+
+class CarProfileView {
+  constructor() {
+    this.carSvg = (0,_constants_generateSVG__WEBPACK_IMPORTED_MODULE_1__.generateSvg)(_img_car_svg__WEBPACK_IMPORTED_MODULE_0__).querySelector("svg");
+    this.container = null;
+    this.partsList = null;
+  }
+  render(data) {
+    this.carSvg.style.fill = data.color;
+    return `<section class="profile" id="${data.id}">
+    <div class="car-info">
+    <div><h1>${data.brand} ${data.model}</h1>
+    <p>Год:<span>${data.year}</span></p>
+    <p>Цвет:<span>${data.color}</span></p>
+    <p>Регистрационный номер:<span>${data.carPlate}</span></p>
+    <p>Пробег:<span>${data.mileage}</span></p>
+    </div>
+    <div class="car-img"> ${this.carSvg.outerHTML}</div>
+    </div>
+    <div class="profile-control-panel">
+    <button class = "btn history">История</button>
+    <button class = "btn installed-parts">Установленные запчасти</button>
+    <button class = "btn add-note ">Добавить запись</button>
+    </div>
+   
+    ${_NoteList__WEBPACK_IMPORTED_MODULE_4__["default"].render(data.id)}
+    ${_ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__["default"].render()}
+    </section>`;
+  }
+  createPartsListItem(data) {
+    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span></li>`;
+  }
+  openModalWindow() {
+    _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__["default"].view.showModalWindow();
+  }
+  renderNoteList(profileId) {
+    this.partsList.remove();
+    const list = `<div class="note-list" id ="note-list"></div>`;
+    this.container.insertAdjacentHTML("beforeend", list);
+    _NoteList__WEBPACK_IMPORTED_MODULE_4__["default"].render(profileId);
+  }
+  renderParts(snapshot) {
+    this.container = document.querySelector(".profile");
+    this.partsList = document.createElement("ol");
+    const noteList = document.querySelector(".note-list");
+    noteList.remove();
+    snapshot.forEach(el => {
+      this.partsList.innerHTML += this.createPartsListItem(el.data());
+    });
+    this.container.append(this.partsList);
+  }
+}
+class CarProfileModel {
+  constructor(view) {
+    this.view = view;
+  }
+  openModalWindow() {
+    this.view.openModalWindow();
+  }
+  async showParts(profileId) {
+    const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].pathUserCars}/${profileId}/parts`);
+    this.view.renderParts(snapshot);
+  }
+  renderNoteList(profileId) {
+    this.view.renderNoteList(profileId);
+  }
+}
+class CarProfileController {
+  constructor(model, root) {
+    this.root = root;
+    this.model = model;
+    this.profileId = null;
+    this.addListeners();
+  }
+  addListeners() {
+    this.root.addEventListener("click", event => this.clickHandler(event));
+  }
+  clickHandler(event) {
+    this.profileId = document.querySelector(".profile")?.id;
+    const clickBlock = event.target.closest(".profile-control-panel");
+    const addNote = event.target.closest(".add-note");
+    const installedParts = event.target.closest(".installed-parts");
+    const history = event.target.closest(".history");
+    const clickButton = history || installedParts || addNote;
+    if (clickBlock) {
+      switch (clickButton) {
+        case history:
+          // console.log("history");
+          this.model.renderNoteList(this.profileId);
+          break;
+        case installedParts:
+          this.model.showParts(this.profileId);
+          break;
+        case addNote:
+          this.model.openModalWindow();
+          break;
+      }
+    }
+  }
+}
+class CarProfileMain {
+  constructor() {
+    this.view = new CarProfileView();
+    this.model = new CarProfileModel(this.view);
+    this.controller = new CarProfileController(this.model, document.querySelector("#root"));
+  }
+  render(data) {
+    return this.view.render(data);
+  }
+}
+const CarProfile = new CarProfileMain();
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CarProfile);
 
 /***/ }),
 
@@ -20631,18 +20801,21 @@ class FirebaseAPI {
     this.pathUserParts = null;
   }
   async getItemsArr(path) {
-    const querySnapshot = await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.getDocs)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.query)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.collection)(this.db, path)));
-    return querySnapshot;
+    const snapshot = await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.getDocs)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.query)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.collection)(this.db, path)));
+
+    // console.log();
+    // console.log(x);
+    return snapshot;
   }
   async getItem(path, id) {
     const docSnap = await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.getDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, `${path}/${id}`));
     return docSnap.data();
   }
-  async createItem(id, data = {}) {
-    await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.setDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, this.pathUserCars, id), data);
+  async createItem(id, data = {}, path = this.pathUserCars) {
+    await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.setDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id), data);
   }
-  async deleteItem(id) {
-    await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.deleteDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, this.pathUserCars, id));
+  async deleteItem(id, path = this.pathUserCars) {
+    await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.deleteDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id));
   }
   async createDocUser(path, id, data = {}) {
     await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.setDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id), data);
@@ -20837,7 +21010,7 @@ class ModalWindowView {
     this.buttonSave = null;
   }
   render() {
-    return ` <div class="modal-window">
+    return ` <div class="modal-window car-mod">
     <label>Марка
     <select class="car-info-input select-brand"></select>
   </label>
@@ -20860,7 +21033,7 @@ class ModalWindowView {
     </div>`;
   }
   showModalWindow(data = null) {
-    this.container = document.querySelector(".modal-window");
+    this.container = document.querySelector(".car-mod");
     this.selectBrand = document.querySelector(".select-brand");
     this.selectModel = document.querySelector(".select-model");
     this.selectYear = document.querySelector(".select-year");
@@ -20901,8 +21074,16 @@ class ModalWindowView {
   setSelectedIndex(item, value) {
     item.selectedIndex = value;
   }
-  renderCarList() {
-    _CarList__WEBPACK_IMPORTED_MODULE_1__["default"].render();
+
+  // renderCarList() {
+  //   CarList.render();
+  // }
+
+  renderCarBlock(data) {
+    _CarList__WEBPACK_IMPORTED_MODULE_1__["default"].view.renderCarBlock(data);
+  }
+  updateCarBlock(data) {
+    _CarList__WEBPACK_IMPORTED_MODULE_1__["default"].view.updateCarBlock(data);
   }
   cleanModalWindow() {
     const arr = this.container.querySelectorAll(".car-info-input");
@@ -20938,16 +21119,17 @@ class ModalWindowModel {
   }
   async createCar(data) {
     if (!data.id) {
-      data.id = 1;
+      data.id = "car1";
     } else {
-      data.id += 1;
+      const index = Number(data.id[data.id.length - 1]) + 1;
+      data.id = "car" + index;
     }
-    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_2__["default"].createItem(String(data.id), data);
-    this.view.renderCarList();
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_2__["default"].createItem(data.id, data);
+    this.view.renderCarBlock(data);
   }
   async updateCar(data) {
-    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_2__["default"].createItem(String(data.id), data);
-    this.view.renderCarList();
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_2__["default"].createItem(data.id, data);
+    this.view.updateCarBlock(data);
   }
   cleanModalWindow() {
     this.view.cleanModalWindow();
@@ -20966,7 +21148,7 @@ class ModalWindowController {
     this.inputColor = null;
     this.carPlate = null;
     this.mileage = null;
-    this.buttonCreate = null;
+    this.buttonSave = null;
     this.addListeners();
   }
   addListeners() {
@@ -20988,7 +21170,7 @@ class ModalWindowController {
         color: this.inputColor.value,
         carPlate: this.carPlate.value,
         mileage: this.mileage.value,
-        id: Number(lastId)
+        id: lastId
       };
       if (buttonSave.classList.contains("update")) {
         data.id = buttonSave.getAttribute("data-id");
@@ -21038,7 +21220,7 @@ class ModalWindowController {
           this.model.setDisabled(false, this.selectYear);
       }
     }
-    if (document.querySelector(".modal-window")) {
+    if (document.querySelector(".car-mod")) {
       if (this.selectBrand.value && this.selectModel.value && this.selectYear.value && this.inputColor.value && this.carPlate.value && this.mileage.value) {
         this.model.setDisabled(false, this.buttonSave);
       } else {
@@ -21059,6 +21241,300 @@ class ModalWindowMain {
 }
 const ModalWindowCarMod = new ModalWindowMain();
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalWindowCarMod);
+
+/***/ }),
+
+/***/ "./src/components/ModalWindowNoteMod.js":
+/*!**********************************************!*\
+  !*** ./src/components/ModalWindowNoteMod.js ***!
+  \**********************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _CarProfile__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CarProfile */ "./src/components/CarProfile.js");
+/* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
+/* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
+// import { Timestamp } from "firebase/firestore";
+
+
+
+class NoteModView {
+  constructor() {
+    // this.date = date;
+    this.container = null;
+    this.description = null;
+    this.costWork = null;
+    this.mileage = null;
+    this.buttonSave = null;
+    this.partsList = null;
+    // this.addParts = null;
+  }
+  render() {
+    return ` <div class="modal-window note-mod">
+    <div class="info-block">
+    <h2 class="date">${new Date().toDateString()}</h2>
+    <label> Выполненые работы:
+    <input type="textarea" class="info-work-input description"/>
+  </label>
+  <label>Стоимость работ:
+  <input type="number" class="info-work-input cost-work"/>
+  </label>
+  <label>Пробег:
+  <input type="number" class="info-work-input mileage"/>
+  </label>
+  </div>
+  <div class="info-block info-parts">
+  <label> Номер запчасти:
+    <input type="text" class="info-parts-input parts-number"/>
+  </label>
+  <label>Название запчасти:
+    <input type="text" class="info-parts-input parts-name"/>
+  </label>
+  <label> Стоимость:
+    <input type="number" class="info-parts-input cost-parts "/>
+  </label>
+  <label> Производитель:
+    <input type="text" class="info-parts-input parts-brand"/>
+  </label> 
+  <button class="btn add-parts" disabled>Добавить</button>
+  </div>
+  <ol class ="parts-list"></ol>
+  <button class="btn button-save-note" disabled>Сохранить</button>
+    </div>`;
+  }
+  showModalWindow(data = null) {
+    this.container = document.querySelector(".note-mod");
+    this.description = document.querySelector(".description");
+    this.costWork = document.querySelector(".cost-work");
+    this.mileage = document.querySelector(".mileage");
+    this.partsList = this.container.querySelector(".parts-list");
+    this.buttonSave = document.querySelector(".button-save-note");
+    // this.addParts = document.querySelector(".add-parts");
+
+    if (data) {
+      const string = data.list;
+      const newPartsList = new DOMParser().parseFromString(string, "text/html").querySelector(".parts-list");
+      const arr = newPartsList.querySelectorAll("li");
+      arr.forEach(el => el.insertAdjacentHTML("beforeend", `<button class="btn button-remove">Удалить</button>`));
+      this.description.value = data.description;
+      this.costWork.value = data.cost;
+      this.mileage.value = data.mileage;
+      this.buttonSave.classList.add("update");
+      this.buttonSave.setAttribute("data-id", data.id);
+      this.partsList.replaceWith(newPartsList);
+
+      // this.setDisabled(false, this.buttonSave);
+    }
+    this.container.classList.add("modal-window_open");
+  }
+  setDisabled(state, item) {
+    item.disabled = state;
+  }
+  createPartsListItem(data) {
+    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span>
+    <button class="btn button-remove">Удалить</button></li>
+    `;
+  }
+  cleanInfoParts() {
+    const arr = document.querySelectorAll(".info-parts-input");
+    arr.forEach(el => {
+      el.value = "";
+    });
+  }
+  renderPartsListItem(data) {
+    const list = this.container.querySelector(".parts-list");
+    const item = this.createPartsListItem(data);
+    // console.log(item);
+
+    list.insertAdjacentHTML("beforeend", item);
+    this.cleanInfoParts();
+  }
+  removeItem(item) {
+    item.remove();
+  }
+  renderNoteBlock(data) {
+    _NoteList__WEBPACK_IMPORTED_MODULE_2__["default"].view.renderNoteBlock(data);
+    // CarProfile.view.renderNoteBlock(data);
+  }
+  updateNoteBlock(data) {
+    _NoteList__WEBPACK_IMPORTED_MODULE_2__["default"].view.updateNoteBlock(data);
+  }
+  closeModalWindow() {
+    this.setDisabled(true, this.buttonSave);
+    // this.setDisabled(true, this.addParts);
+    this.container.classList.remove("modal-window_open");
+  }
+  cleanModalWindow() {
+    const arr = this.container.querySelectorAll(".info-work-input");
+    const list = this.container.querySelector(".parts-list");
+    list.innerHTML = "";
+    arr.forEach(el => {
+      el.value = "";
+    });
+  }
+}
+class NoteModModel {
+  constructor(view) {
+    this.view = view;
+  }
+  setDisabled(state, item) {
+    this.view.setDisabled(state, item);
+  }
+  createPartsListItem(data) {
+    this.view.renderPartsListItem(data);
+  }
+  async createPart(data) {
+    const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/parts`);
+    const lastId = snapshot.docs[snapshot.docs.length - 1]?.id;
+    // console.log(lastId);
+    if (!lastId) {
+      data.id = "part1";
+    } else {
+      const index = Number(lastId[lastId.length - 1]) + 1;
+      data.id = "part" + index;
+    }
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/parts`);
+    // this.view.createPart(data);
+    this.createPartsListItem(data);
+  }
+  removeItem(item, profileId) {
+    this.view.removeItem(item);
+    _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].deleteItem(item.id, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/parts`);
+  }
+  async createNote(data) {
+    if (!data.id) {
+      data.id = "note1";
+    } else {
+      const index = Number(data.id[data.id.length - 1]) + 1;
+      data.id = "note" + index;
+    }
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/notes`);
+    this.view.renderNoteBlock(data);
+  }
+  async updateNote(data) {
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/notes`);
+    this.view.updateNoteBlock(data);
+  }
+  closeModalWindow() {
+    this.view.closeModalWindow();
+  }
+  cleanModalWindow() {
+    this.view.cleanModalWindow();
+  }
+}
+class NoteModController {
+  constructor(model, root) {
+    this.model = model;
+    this.root = root;
+    this.partsNumber = null;
+    this.partsName = null;
+    this.costParts = null;
+    this.partsBrand = null;
+    this.buttonAdd = null;
+    this.description = null;
+    this.costWork = null;
+    this.mileage = null;
+    this.buttonSave = null;
+    this.container = null;
+    this.profileId = null;
+    this.addListeners();
+  }
+  addListeners() {
+    this.root.addEventListener("click", event => this.clickHandler(event));
+    this.root.addEventListener("input", event => this.inputHandler(event));
+  }
+  inputHandler(event) {
+    this.description = document.querySelector(".description");
+    this.costWork = document.querySelector(".cost-work");
+    this.mileage = document.querySelector(".mileage");
+    this.buttonSave = document.querySelector(".button-save-note");
+    this.buttonAdd = document.querySelector(".add-parts");
+    this.partsNumber = document.querySelector(".parts-number");
+    this.partsName = document.querySelector(".parts-name");
+    this.costParts = document.querySelector(".cost-parts");
+    this.partsBrand = document.querySelector(".parts-brand");
+    if (document.querySelector(".note-mod")) {
+      if (this.partsNumber.value && this.partsName.value && this.costParts.value && this.partsBrand.value) {
+        this.model.setDisabled(false, this.buttonAdd);
+      } else {
+        this.model.setDisabled(true, this.buttonAdd);
+      }
+      if (this.description.value && this.costWork.value && this.mileage.value) {
+        this.model.setDisabled(false, this.buttonSave);
+      } else {
+        this.model.setDisabled(true, this.buttonSave);
+      }
+    }
+  }
+  clickHandler(event) {
+    const buttonAdd = event.target.closest(".add-parts");
+    const buttonRemove = event.target.closest(".button-remove");
+    const buttonSave = event.target.closest(".button-save-note");
+    const arrNotes = document.querySelectorAll(".note-block");
+    const lastId = arrNotes[arrNotes.length - 1]?.getAttribute("id");
+    this.profileId = document.querySelector(".profile")?.id;
+    if (buttonAdd) {
+      const data = {
+        number: this.partsNumber.value,
+        name: this.partsName.value,
+        cost: this.costParts.value,
+        brand: this.partsBrand.value,
+        profileId: this.profileId,
+        timestamp: Date.now()
+      };
+
+      // this.model.createPartsListItem(data);
+      this.model.createPart(data);
+      this.model.setDisabled(true, this.buttonAdd);
+    }
+    if (buttonRemove) {
+      const item = event.target.closest(".list-item");
+      this.model.removeItem(item, this.profileId);
+    }
+    if (buttonSave) {
+      this.container = document.querySelector(".modal-window");
+      const partsList = this.container.querySelector(".parts-list");
+      partsList.querySelectorAll(".button-remove").forEach(el => el.remove());
+      //   console.log(this.partsList);
+
+      const data = {
+        description: this.description.value,
+        cost: this.costWork.value,
+        mileage: this.mileage.value,
+        list: partsList.outerHTML,
+        profileId: this.profileId,
+        timestamp: Date.now(),
+        id: lastId
+      };
+      if (buttonSave.classList.contains("update")) {
+        data.id = buttonSave.getAttribute("data-id");
+        this.model.updateNote(data);
+      } else {
+        this.model.createNote(data);
+      }
+
+      // this.model.createNote(data);
+      this.model.closeModalWindow();
+      this.model.cleanModalWindow();
+      // this.model.setDisabled(true, buttonSave);
+    }
+  }
+}
+class NoteModMain {
+  constructor() {
+    this.view = new NoteModView();
+    this.model = new NoteModModel(this.view);
+    this.controller = new NoteModController(this.model, document.querySelector("#root"));
+  }
+  render() {
+    return this.view.render();
+  }
+}
+const ModalWindowNoteMod = new NoteModMain();
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ModalWindowNoteMod);
 
 /***/ }),
 
@@ -21090,6 +21566,131 @@ const NavBar = {
 
 /***/ }),
 
+/***/ "./src/components/NoteList.js":
+/*!************************************!*\
+  !*** ./src/components/NoteList.js ***!
+  \************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ModalWindowNoteMod */ "./src/components/ModalWindowNoteMod.js");
+/* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
+
+
+class NoteListView {
+  constructor() {
+    this.container = null;
+  }
+  async renderNotes(profileId) {
+    const arr = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/notes`);
+    let html = ``;
+    arr.forEach(el => {
+      html += this.createNoteBlock(el.data());
+    });
+    return html;
+  }
+  render(profileId) {
+    this.renderNotes(profileId).then(html => {
+      this.container = document.querySelector("#note-list");
+      this.container.innerHTML = html;
+    }).catch(error => {
+      console.error(error);
+      this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
+    });
+    return `<div class="note-list" id ="note-list"></div>`;
+  }
+  createNoteBlock(data) {
+    return `<div class="note-block" id="${data.id}">
+ <p>${data.description}</p>
+ <p>Стоимость: ${data.cost}</p>
+ <p>Пробег: ${data.mileage}</p>
+ ${data.list} 
+ <button class="btn remove-note">Удалить</button>
+ <button class="btn update-note">Изменить</button>
+  </div>`;
+  }
+  renderNoteBlock(data) {
+    // const container = document.querySelector(".note-list");
+    const block = this.createNoteBlock(data);
+    this.container.insertAdjacentHTML("beforeend", block);
+    // console.log(block);
+  }
+  updateNoteBlock(data) {
+    const block = this.container.querySelector(`#${data.id}`);
+    const newBlock = new DOMParser().parseFromString(this.createNoteBlock(data), "text/html").querySelector(".note-block");
+    block.replaceWith(newBlock);
+  }
+  removeItem(item) {
+    item.remove();
+  }
+  openModalWindow(data) {
+    _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_0__["default"].view.showModalWindow(data);
+  }
+}
+class NoteListModel {
+  constructor(view) {
+    this.view = view;
+  }
+  removeItem(item, profileId) {
+    this.view.removeItem(item);
+    _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].deleteItem(item.id, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/notes`);
+  }
+  async openModalWindow(itemId, profileId) {
+    const data = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getItem(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/notes`, itemId);
+    this.view.openModalWindow(data);
+  }
+}
+class NoteListController {
+  constructor(model, root) {
+    this.root = root;
+    this.model = model;
+    this.profileId = null;
+    this.addListeners();
+  }
+  addListeners() {
+    this.root.addEventListener("click", event => this.clickHandler(event));
+  }
+  clickHandler(event) {
+    const clickBlock = event.target.closest(".note-block");
+    const removeNote = event.target.closest(".remove-note");
+    const updateNote = event.target.closest(".update-note");
+    const clickButton = removeNote || updateNote || null;
+    this.profileId = document.querySelector(".profile")?.id;
+    if (clickBlock) {
+      switch (clickButton) {
+        case null:
+          console.log("block");
+          // this.model.openCarProfile(clickBlock.id);
+          break;
+        case removeNote:
+          const item = event.target.closest(".note-block");
+          this.model.removeItem(item, this.profileId);
+          break;
+        case updateNote:
+          this.model.openModalWindow(clickBlock.id, this.profileId);
+          break;
+      }
+    }
+  }
+}
+class NoteListMain {
+  constructor() {
+    this.view = new NoteListView();
+    this.model = new NoteListModel(this.view);
+    this.controller = new NoteListController(this.model, document.querySelector("#root"));
+  }
+  render(profileId) {
+    return this.view.render(profileId);
+  }
+}
+const NoteList = new NoteListMain();
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (NoteList);
+
+/***/ }),
+
 /***/ "./src/constants/constants.js":
 /*!************************************!*\
   !*** ./src/constants/constants.js ***!
@@ -21111,6 +21712,22 @@ const ALL_YEARS = Array.from({
   length: currentYear - startYear + 1
 }, (_, i) => startYear + i);
 ALL_YEARS.unshift("Не выбрано");
+
+/***/ }),
+
+/***/ "./src/constants/generateSVG.js":
+/*!**************************************!*\
+  !*** ./src/constants/generateSVG.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   generateSvg: () => (/* binding */ generateSvg)
+/* harmony export */ });
+function generateSvg(svg) {
+  return new DOMParser().parseFromString(svg, "image/svg+xml");
+}
 
 /***/ }),
 
@@ -21312,6 +21929,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _components_ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/ModalWindowCarMod */ "./src/components/ModalWindowCarMod.js");
 /* harmony import */ var _components_CarList__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/CarList */ "./src/components/CarList.js");
+/* harmony import */ var _components_CarProfile__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/CarProfile */ "./src/components/CarProfile.js");
+
 
 
 class GarageView {
@@ -21331,10 +21950,10 @@ class GarageView {
   renderModalWindow() {
     _components_ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_0__["default"].view.showModalWindow();
   }
-  renderProfileCar() {
-    //вызов мвс из другого модуля
+  renderCarProfile(data) {
+    const container = document.querySelector(".main-page");
+    container.innerHTML = _components_CarProfile__WEBPACK_IMPORTED_MODULE_2__["default"].render(data);
   }
-  renderCarList() {}
 }
 class GarageModel {
   constructor(view) {
@@ -21750,7 +22369,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
 /* harmony import */ var _node_modules_css_loader_dist_cjs_js_modalWindow_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_modalWindow.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_modalWindow.scss");
 /* harmony import */ var _node_modules_css_loader_dist_cjs_js_loginForm_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_loginForm.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_loginForm.scss");
+/* harmony import */ var _node_modules_css_loader_dist_cjs_js_carProfile_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_carProfile.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss");
 // Imports
+
 
 
 
@@ -21758,6 +22379,7 @@ __webpack_require__.r(__webpack_exports__);
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 ___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_modalWindow_scss__WEBPACK_IMPORTED_MODULE_2__["default"]);
 ___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_loginForm_scss__WEBPACK_IMPORTED_MODULE_3__["default"]);
+___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_carProfile_scss__WEBPACK_IMPORTED_MODULE_4__["default"]);
 // Module
 ___CSS_LOADER_EXPORT___.push([module.id, `:root {
   --main-bg-color: #fff;
@@ -21835,7 +22457,65 @@ body {
 
 .content {
   padding: 1.5em 0;
-}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss"],"names":[],"mappings":"AAGA;EACE,qBAAA;EACA,kBAAA;EACA,qBAAA;EACA,eAAA;EACA,cAAA;EACA,iBAAA;EACA,iBAAA;EACA,gBAAA;EACA,eAAA;EACA,eAAA;EACA,aAAA;EACA,eAAA;EACA,oBAAA;EACA,qBAAA;EACA,gBAAA;EACA,eAAA;EACA,yBAAA;AAAF;;AAGA;EACE,sBAAA;AAAF;;AAGA;;;EAGE,mBAAA;AAAF;;AAGA;EACE,aAAA;EACA,SAAA;EACA,gCAAA;AAAF;;AAGA;EACE,eAAA;EACA,kBAAA;AAAF;;AAGA;EACE,UAAA;EACA,SAAA;EACA,gBAAA;EACA,kCAAA;EACA,aAAA;EACA,wCAAA;AAAF;;AAGA;EACE,gBAAA;AAAF;;AAGA;EACE,cAAA;EACA,kBAAA;EACA,wBAAA;EACA,gBAAA;EACA,qBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,kCAAA;EACA,mBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,6BAAA;EACA,mBAAA;AAAF;;AAGA;EACE,gBAAA;AAAF","sourcesContent":["@import url(./_modalWindow.scss);\r\n@import url(./_loginForm.scss);\r\n\r\n:root {\r\n  --main-bg-color: #fff;\r\n  --color-text: #000;\r\n  --color-link: #007bff;\r\n  --blue: #007bff;\r\n  --red: #dc3545;\r\n  --orange: #fd7e14;\r\n  --yellow: #ffc107;\r\n  --green: #28a745;\r\n  --teal: #20c997;\r\n  --cyan: #17a2b8;\r\n  --white: #fff;\r\n  --gray: #6c757d;\r\n  --gray-dark: #343a40;\r\n  --gray-light: #d6d6d6;\r\n  --light: #f8f9fa;\r\n  --dark: #343a40;\r\n  --base-border-radius: 4px;\r\n}\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  margin: 0;\r\n  font-family: \"Exo 2\", sans-serif;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  border: 1px var(--gray-dark) solid;\r\n  display: flex;\r\n  border-radius: var(--base-border-radius);\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  color: var(--color-text);\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: var(--gray-dark);\r\n  color: var(--white);\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: var(--blue);\r\n  color: var(--white);\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n"],"sourceRoot":""}]);
+}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss"],"names":[],"mappings":"AAIA;EACE,qBAAA;EACA,kBAAA;EACA,qBAAA;EACA,eAAA;EACA,cAAA;EACA,iBAAA;EACA,iBAAA;EACA,gBAAA;EACA,eAAA;EACA,eAAA;EACA,aAAA;EACA,eAAA;EACA,oBAAA;EACA,qBAAA;EACA,gBAAA;EACA,eAAA;EACA,yBAAA;AAAF;;AAGA;EACE,sBAAA;AAAF;;AAGA;;;EAGE,mBAAA;AAAF;;AAGA;EACE,aAAA;EACA,SAAA;EACA,gCAAA;AAAF;;AAGA;EACE,eAAA;EACA,kBAAA;AAAF;;AAGA;EACE,UAAA;EACA,SAAA;EACA,gBAAA;EACA,kCAAA;EACA,aAAA;EACA,wCAAA;AAAF;;AAGA;EACE,gBAAA;AAAF;;AAGA;EACE,cAAA;EACA,kBAAA;EACA,wBAAA;EACA,gBAAA;EACA,qBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,kCAAA;EACA,mBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,6BAAA;EACA,mBAAA;AAAF;;AAGA;EACE,gBAAA;AAAF","sourcesContent":["@import url(./_modalWindow.scss);\r\n@import url(./_loginForm.scss);\r\n@import url(./_carProfile.scss);\r\n\r\n:root {\r\n  --main-bg-color: #fff;\r\n  --color-text: #000;\r\n  --color-link: #007bff;\r\n  --blue: #007bff;\r\n  --red: #dc3545;\r\n  --orange: #fd7e14;\r\n  --yellow: #ffc107;\r\n  --green: #28a745;\r\n  --teal: #20c997;\r\n  --cyan: #17a2b8;\r\n  --white: #fff;\r\n  --gray: #6c757d;\r\n  --gray-dark: #343a40;\r\n  --gray-light: #d6d6d6;\r\n  --light: #f8f9fa;\r\n  --dark: #343a40;\r\n  --base-border-radius: 4px;\r\n}\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  margin: 0;\r\n  font-family: \"Exo 2\", sans-serif;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  border: 1px var(--gray-dark) solid;\r\n  display: flex;\r\n  border-radius: var(--base-border-radius);\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  color: var(--color-text);\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: var(--gray-dark);\r\n  color: var(--white);\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: var(--blue);\r\n  color: var(--white);\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n"],"sourceRoot":""}]);
+// Exports
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
+
+
+/***/ }),
+
+/***/ "./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss":
+/*!*************************************************************************!*\
+  !*** ./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss ***!
+  \*************************************************************************/
+/***/ ((module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
+/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
+// Imports
+
+
+var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
+// Module
+___CSS_LOADER_EXPORT___.push([module.id, `.profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.car-info {
+  display: flex;
+  justify-content: space-around;
+}
+
+.car-img {
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.profile-control-panel {
+  display: flex;
+  justify-content: space-around;
+}
+
+.note-list {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  gap: 5px;
+}
+
+.note-block {
+  border: 2px solid;
+}
+`, "",{"version":3,"sources":["webpack://./src/scss/_carProfile.scss"],"names":[],"mappings":"AAAA;EACE,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,aAAa;EACb,6BAA6B;AAC/B;;AAEA;EACE;IACE,WAAW;IACX,YAAY;EACd;AACF;;AAEA;EACE,aAAa;EACb,6BAA6B;AAC/B;;AAEA;EACE,aAAa;EACb,sBAAsB;EACtB,gBAAgB;EAChB,QAAQ;AACV;;AAEA;EACE,iBAAiB;AACnB","sourcesContent":[".profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  display: flex;\r\n  flex-direction: column;\r\n  margin-top: 20px;\r\n  gap: 5px;\r\n}\r\n\r\n.note-block {\r\n  border: 2px solid;\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -21891,11 +22571,12 @@ var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBP
 ___CSS_LOADER_EXPORT___.push([module.id, `.modal-window {
   display: none;
   flex-direction: column;
-  width: 50vw;
-  height: 50vh;
+  width: 80vw;
+  height: 80vh;
   border: solid 2px;
   gap: 1rem;
   padding: 1rem;
+  background-color: aliceblue;
 }
 
 .modal-window_open {
@@ -21917,7 +22598,7 @@ label {
     width: 20%;
   }
 }
-`, "",{"version":3,"sources":["webpack://./src/scss/_modalWindow.scss"],"names":[],"mappings":"AAAA;EACE,aAAa;EACb,sBAAsB;EACtB,WAAW;EACX,YAAY;EACZ,iBAAiB;EACjB,SAAS;EACT,aAAa;AACf;;AAEA;EACE,kBAAkB;EAClB,aAAa;;EAEb,QAAQ;EACR,SAAS;EACT,gCAAgC;AAClC;;AAEA;EACE,aAAa;EACb,8BAA8B;EAC9B;IACE,UAAU;EACZ;EACA;IACE,UAAU;EACZ;AACF","sourcesContent":[".modal-window {\r\n  display: none;\r\n  flex-direction: column;\r\n  width: 50vw;\r\n  height: 50vh;\r\n  border: solid 2px;\r\n  gap: 1rem;\r\n  padding: 1rem;\r\n}\r\n\r\n.modal-window_open {\r\n  position: absolute;\r\n  display: flex;\r\n\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 20%;\r\n  }\r\n  select {\r\n    width: 20%;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
+`, "",{"version":3,"sources":["webpack://./src/scss/_modalWindow.scss"],"names":[],"mappings":"AAAA;EACE,aAAa;EACb,sBAAsB;EACtB,WAAW;EACX,YAAY;EACZ,iBAAiB;EACjB,SAAS;EACT,aAAa;EACb,2BAA2B;AAC7B;;AAEA;EACE,kBAAkB;EAClB,aAAa;;EAEb,QAAQ;EACR,SAAS;EACT,gCAAgC;AAClC;;AAEA;EACE,aAAa;EACb,8BAA8B;EAC9B;IACE,UAAU;EACZ;EACA;IACE,UAAU;EACZ;AACF","sourcesContent":[".modal-window {\r\n  display: none;\r\n  flex-direction: column;\r\n  width: 80vw;\r\n  height: 80vh;\r\n  border: solid 2px;\r\n  gap: 1rem;\r\n  padding: 1rem;\r\n  background-color: aliceblue;\r\n}\r\n\r\n.modal-window_open {\r\n  position: absolute;\r\n  display: flex;\r\n\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 20%;\r\n  }\r\n  select {\r\n    width: 20%;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -22746,6 +23427,16 @@ function __classPrivateFieldIn(state, receiver) {
     return typeof state === "function" ? receiver === state : state.has(receiver);
 }
 
+
+/***/ }),
+
+/***/ "./src/img/car.svg":
+/*!*************************!*\
+  !*** ./src/img/car.svg ***!
+  \*************************/
+/***/ ((module) => {
+
+module.exports = "<svg version=\"1.1\" id=\"Capa_1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 512 512\" style=\"enable-background:new 0 0 512 512;\" xml:space=\"preserve\" ><g><path style=\"fill:#AAB2BD;\" d=\"M131.988,291.993c0,5.514-1.121,10.793-3.12,15.598c-6.077,14.316-20.315,24.393-36.87,24.393 c-15.196,0-28.392-8.482-35.191-20.957c-3.039-5.678-4.8-12.152-4.8-19.033c0-22.074,17.917-39.991,39.991-39.991 C114.071,252.002,131.988,269.919,131.988,291.993z\"></path><path style=\"fill:#AAB2BD;\" d=\"M403.924,252.002c22.073,0,39.991,17.917,39.991,39.991c0,5.514-1.117,10.793-3.116,15.598 c-6.077,14.316-20.324,24.393-36.875,24.393c-17.917,0-33.109-11.842-38.232-28.072c-1.117-3.764-1.758-7.764-1.758-11.918 C363.934,269.919,381.852,252.002,403.924,252.002z\"></path></g><path style=\"fill:#E6E9ED;\" d=\"M499.901,260.001v7.998l-23.994-7.998v-13.517v-0.078 C494.145,254.244,499.901,260.001,499.901,260.001z\"></path><path class=\"svg-car-color\" d=\"M371.932,220.01c52.87,8.158,85.098,18.315,103.976,26.396v0.078v13.517l23.994,7.998v15.996 l8.076,7.998l-8.076,7.998v7.998h-47.988l-11.114-0.398c1.999-4.805,3.116-10.084,3.116-15.598 c0-22.074-17.918-39.991-39.991-39.991c-22.072,0-39.99,17.917-39.99,39.991c0,4.154,0.641,8.154,1.758,11.918l-9.756,4.078H139.986 l-11.118-0.398c2-4.805,3.12-10.084,3.12-15.598c0-22.074-17.917-39.991-39.99-39.991s-39.991,17.917-39.991,39.991 c0,6.881,1.761,13.355,4.8,19.033l-12.798-3.037c0,0-27.994,0-31.993-23.994c-3.28-19.676-7.998-39.991-7.998-39.991h39.991 l-23.995-15.996v-7.998l71.983-7.999c0,0,10.478-5.999,30.071-12.797v0.082l9.919,4.717c0,0,15.996,15.997,223.947,15.997 L371.932,220.01L371.932,220.01z\"></path><g style=\"opacity:0.3;\"><path style=\"fill:#FFFFFF;\" d=\"M52.007,307.989c0,0-27.993,0-31.993-23.994c-3.28-19.676-7.998-39.991-7.998-39.991l15.997-15.996 v-7.998l71.983-7.999c0,0,8.889-5.045,25.432-11.119l-3.358-1.597v-0.082c-19.593,6.799-30.071,12.797-30.071,12.797l-71.983,7.999 v7.998L4.019,244.004c0,0,4.718,20.315,7.998,39.991c3.999,23.994,31.993,23.994,31.993,23.994l12.798,3.037 c-0.367-0.686-0.656-1.42-0.984-2.131L52.007,307.989z\"></path></g><g style=\"opacity:0.2;\"><path d=\"M499.901,283.995v-15.996v-7.998c0,0-5.757-5.757-23.994-13.595c-18.878-8.08-103.976-26.396-103.976-26.396h-21.744 c0,0,97.469,19.999,116.347,28.079c18.238,7.838,25.369,14.246,25.369,14.246v5.664v15.996l8.076,7.998l-8.076,7.998v7.998h7.998 v-7.998l8.076-7.998L499.901,283.995z\"></path></g><path style=\"fill:#5D9CEC;\" d=\"M243.962,180.019c53.987,0,108.857,28.712,127.97,39.991h-15.996 c-207.951,0-223.947-15.997-223.947-15.997l-9.919-4.717v-0.082C147.825,190.337,189.494,180.019,243.962,180.019z\"></path><g style=\"opacity:0.3;\"><path style=\"fill:#FFFFFF;\" d=\"M268.659,218.862l9.475-35.343c-5.265-1.007-10.56-1.835-15.918-2.425l-9.975,37.222 C257.49,218.51,262.941,218.694,268.659,218.862z\"></path></g><g style=\"opacity:0.3;\"><path style=\"fill:#FFFFFF;\" d=\"M276.884,219.084l9.092-33.938c-1.305-0.297-2.608-0.578-3.913-0.855l-9.295,34.691 C274.096,219.018,275.525,219.049,276.884,219.084z\"></path></g><polygon style=\"fill:#E6E9ED;\" points=\"20.015,228.008 44.009,244.004 4.019,244.004 \"></polygon><polygon style=\"fill:#FFFFFF;\" points=\"24.814,231.207 20.015,228.008 4.019,244.004 12.017,244.004 \"></polygon><g style=\"opacity:0.5;\"><path style=\"fill:#FFFFFF;\" d=\"M60.006,291.993c0-20.707,15.82-37.55,35.991-39.588c-1.336-0.133-2.628-0.402-3.999-0.402 c-22.073,0-39.991,17.917-39.991,39.991c0,22.15,17.917,39.99,39.991,39.99c1.371,0,2.663-0.266,3.999-0.406 C75.826,329.554,60.006,312.769,60.006,291.993z\"></path></g><g style=\"opacity:0.2;\"><path d=\"M123.99,291.993c0,20.705-15.82,37.553-35.991,39.584c1.335,0.141,2.628,0.406,3.999,0.406 c22.073,0,39.99-17.918,39.99-39.99c0-22.152-17.917-39.991-39.99-39.991c-1.371,0-2.664,0.27-3.999,0.402 C108.17,254.431,123.99,271.216,123.99,291.993z\"></path></g><g style=\"opacity:0.5;\"><path style=\"fill:#FFFFFF;\" d=\"M371.932,291.993c0-20.707,15.816-37.55,35.992-39.588c-1.336-0.133-2.633-0.402-4-0.402 c-22.072,0-39.99,17.917-39.99,39.991c0,22.15,17.918,39.99,39.99,39.99c1.367,0,2.664-0.266,4-0.406 C387.748,329.554,371.932,312.769,371.932,291.993z\"></path></g><g style=\"opacity:0.2;\"><path d=\"M435.916,291.993c0,20.705-15.816,37.553-35.991,39.584c1.336,0.141,2.633,0.406,3.999,0.406 c22.073,0,39.991-17.918,39.991-39.99c0-22.152-17.918-39.991-39.991-39.991c-1.366,0-2.663,0.27-3.999,0.402 C420.1,254.431,435.916,271.216,435.916,291.993z\"></path></g><g><path style=\"fill:#3A3847;\" d=\"M43.99,311.987c-10.853,0-32.333-5.717-35.937-27.336c-3.222-19.324-7.9-39.542-7.947-39.741 c-0.312-1.348,0.09-2.758,1.066-3.734l14.824-14.825v-6.342c0-2.039,1.531-3.75,3.558-3.976l71.182-7.908 c7.237-3.948,62.052-32.106,153.206-32.106c68.651,0,122.116,35.098,129.497,40.178c103.304,16.012,128.251,39.959,129.266,40.975 c0.75,0.75,1.172,1.766,1.172,2.828v22.322l6.928,6.826c0.758,0.75,1.195,1.773,1.195,2.844s-0.438,2.094-1.195,2.842l-8.115,7.998 c-1.577,1.562-4.107,1.547-5.654-0.031c-1.547-1.576-1.531-4.107,0.039-5.654l5.225-5.154l-5.225-5.156 c-0.758-0.748-1.195-1.771-1.195-2.842v-22.133c-5.904-4.561-35.726-24.231-124.58-37.9c-0.609-0.094-1.203-0.336-1.71-0.695 c-0.555-0.395-55.854-39.249-125.646-39.249c-93.649,0-149.43,31.153-149.984,31.465c-0.473,0.27-0.996,0.441-1.539,0.504 l-68.425,7.604v4.417c0,1.062-0.422,2.077-1.171,2.827L8.389,245.27c1.301,5.788,4.909,22.214,7.553,38.069 c3.402,20.416,27.045,20.65,28.048,20.65c2.21,0,3.999,1.789,3.999,4S46.2,311.987,43.99,311.987z\"></path><path style=\"fill:#3A3847;\" d=\"M43.986,248.003c-0.761,0-1.531-0.219-2.214-0.672l-23.994-15.996 c-1.84-1.227-2.335-3.706-1.109-5.546c1.223-1.839,3.694-2.339,5.546-1.109l23.994,15.997c1.839,1.226,2.335,3.706,1.109,5.545 C46.548,247.378,45.278,248.003,43.986,248.003z\"></path><path style=\"fill:#3A3847;\" d=\"M43.99,248.003H3.999c-2.21,0-3.999-1.789-3.999-3.999c0-2.21,1.789-3.999,3.999-3.999H43.99 c2.21,0,3.999,1.789,3.999,3.999C47.989,246.214,46.2,248.003,43.99,248.003z\"></path><path style=\"fill:#3A3847;\" d=\"M203.956,211.754c-1.504,0-2.941-0.848-3.62-2.297l-7.999-16.98 c-0.941-1.995-0.085-4.377,1.914-5.319c1.988-0.957,4.378-0.085,5.319,1.914l7.998,16.98c0.941,1.996,0.086,4.378-1.914,5.319 C205.104,211.633,204.526,211.754,203.956,211.754z\"></path><path style=\"fill:#3A3847;\" d=\"M227.946,248.003H211.95c-2.21,0-3.999-1.789-3.999-3.999c0-2.21,1.789-3.999,3.999-3.999h15.996 c2.21,0,3.999,1.789,3.999,3.999C231.945,246.214,230.157,248.003,227.946,248.003z\"></path><path style=\"fill:#3A3847;\" d=\"M92.217,295.991c-2.207,0-4.038-1.787-4.038-3.998s1.75-4,3.96-4h0.078c2.21,0,3.999,1.789,3.999,4 S94.427,295.991,92.217,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M91.979,335.981c-24.256,0-43.99-19.729-43.99-43.988c0-24.259,19.734-43.99,43.99-43.99 s43.989,19.73,43.989,43.99S116.234,335.981,91.979,335.981z M91.979,256.001c-19.847,0-35.991,16.144-35.991,35.992 c0,19.846,16.145,35.99,35.991,35.99s35.991-16.145,35.991-35.99C127.97,272.146,111.825,256.001,91.979,256.001z\"></path><path style=\"fill:#3A3847;\" d=\"M91.979,279.995c-2.21,0-3.999-1.789-3.999-3.998v-7.998c0-2.211,1.789-4,3.999-4 s3.999,1.789,3.999,4v7.998C95.978,278.206,94.189,279.995,91.979,279.995z\"></path><path style=\"fill:#3A3847;\" d=\"M91.979,319.985c-2.21,0-3.999-1.787-3.999-3.998v-7.998c0-2.211,1.789-4,3.999-4 s3.999,1.789,3.999,4v7.998C95.978,318.198,94.189,319.985,91.979,319.985z\"></path><path style=\"fill:#3A3847;\" d=\"M75.982,295.991h-7.998c-2.211,0-3.999-1.787-3.999-3.998s1.788-4,3.999-4h7.998 c2.21,0,3.999,1.789,3.999,4S78.192,295.991,75.982,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M115.973,295.991h-7.998c-2.21,0-3.999-1.787-3.999-3.998s1.789-4,3.999-4h7.998 c2.21,0,3.999,1.789,3.999,4S118.183,295.991,115.973,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M80.669,284.683c-1.023,0-2.047-0.391-2.828-1.172l-5.654-5.654c-1.562-1.562-1.562-4.094,0-5.656 s4.093-1.562,5.654,0l5.655,5.656c1.562,1.561,1.562,4.092,0,5.654C82.715,284.292,81.692,284.683,80.669,284.683z\"></path><path style=\"fill:#3A3847;\" d=\"M108.943,312.956c-1.023,0-2.047-0.391-2.828-1.172l-5.655-5.654c-1.562-1.562-1.562-4.092,0-5.654 c1.562-1.562,4.093-1.562,5.655,0l5.655,5.654c1.562,1.562,1.562,4.094,0,5.654C110.989,312.565,109.966,312.956,108.943,312.956z\"></path><path style=\"fill:#3A3847;\" d=\"M75.014,312.956c-1.023,0-2.046-0.391-2.827-1.172c-1.562-1.561-1.562-4.092,0-5.654l5.654-5.654 c1.562-1.562,4.093-1.562,5.655,0s1.562,4.092,0,5.654l-5.655,5.654C77.06,312.565,76.037,312.956,75.014,312.956z\"></path><path style=\"fill:#3A3847;\" d=\"M103.288,284.683c-1.023,0-2.046-0.391-2.827-1.172c-1.562-1.562-1.562-4.094,0-5.654l5.655-5.656 c1.562-1.562,4.093-1.562,5.655,0s1.562,4.094,0,5.656l-5.655,5.654C105.335,284.292,104.312,284.683,103.288,284.683z\"></path><path style=\"fill:#3A3847;\" d=\"M404.143,295.991c-2.21,0-4.038-1.787-4.038-3.998s1.75-4,3.96-4h0.078c2.211,0,3.999,1.789,3.999,4 S406.354,295.991,404.143,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M403.9,335.981c-24.252,0-43.989-19.729-43.989-43.988c0-24.259,19.737-43.99,43.989-43.99 c24.26,0,43.99,19.73,43.99,43.99S428.16,335.981,403.9,335.981z M403.9,256.001c-19.839,0-35.991,16.144-35.991,35.992 c0,19.846,16.152,35.99,35.991,35.99c19.855,0,35.992-16.145,35.992-35.99C439.893,272.146,423.756,256.001,403.9,256.001z\"></path><path style=\"fill:#3A3847;\" d=\"M403.9,279.995c-2.202,0-3.999-1.789-3.999-3.998v-7.998c0-2.211,1.797-4,3.999-4 c2.219,0,4,1.789,4,4v7.998C407.9,278.206,406.119,279.995,403.9,279.995z\"></path><path style=\"fill:#3A3847;\" d=\"M403.9,319.985c-2.202,0-3.999-1.787-3.999-3.998v-7.998c0-2.211,1.797-4,3.999-4 c2.219,0,4,1.789,4,4v7.998C407.9,318.198,406.119,319.985,403.9,319.985z\"></path><path style=\"fill:#3A3847;\" d=\"M387.904,295.991h-7.998c-2.202,0-3.999-1.787-3.999-3.998s1.797-4,3.999-4h7.998 c2.219,0,3.999,1.789,3.999,4S390.123,295.991,387.904,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M427.895,295.991h-7.998c-2.202,0-3.998-1.787-3.998-3.998s1.796-4,3.998-4h7.998 c2.219,0,4,1.789,4,4S430.113,295.991,427.895,295.991z\"></path><path style=\"fill:#3A3847;\" d=\"M392.591,284.683c-1.016,0-2.046-0.391-2.827-1.172l-5.655-5.654c-1.562-1.562-1.562-4.094,0-5.656 s4.093-1.562,5.655,0l5.654,5.656c1.562,1.561,1.562,4.092,0,5.654C394.637,284.292,393.622,284.683,392.591,284.683z\"></path><path style=\"fill:#3A3847;\" d=\"M420.865,312.956c-1.016,0-2.046-0.391-2.827-1.172l-5.655-5.654c-1.562-1.562-1.562-4.092,0-5.654 c1.562-1.562,4.093-1.562,5.655,0l5.655,5.654c1.562,1.562,1.562,4.094,0,5.654C422.912,312.565,421.896,312.956,420.865,312.956z\"></path><path style=\"fill:#3A3847;\" d=\"M386.936,312.956c-1.015,0-2.046-0.391-2.827-1.172c-1.562-1.561-1.562-4.092,0-5.654l5.655-5.654 c1.562-1.562,4.093-1.562,5.654,0c1.562,1.562,1.562,4.092,0,5.654l-5.654,5.654C388.982,312.565,387.967,312.956,386.936,312.956z \"></path><path style=\"fill:#3A3847;\" d=\"M415.211,284.683c-1.016,0-2.047-0.391-2.828-1.172c-1.562-1.562-1.562-4.094,0-5.654l5.655-5.656 c1.562-1.562,4.093-1.562,5.655,0s1.562,4.094,0,5.656l-5.655,5.654C417.257,284.292,416.242,284.683,415.211,284.683z\"></path><path style=\"fill:#3A3847;\" d=\"M355.912,224.009c-203.722,0-225.013-15.411-226.771-17.168c-1.562-1.562-1.562-4.093,0-5.655 c1.476-1.476,3.823-1.562,5.389-0.242c1.449,0.953,26.306,15.067,221.381,15.067c2.219,0,3.999,1.788,3.999,3.999 C359.911,222.22,358.131,224.009,355.912,224.009z\"></path><path style=\"fill:#3A3847;\" d=\"M355.912,311.987H139.967c-2.21,0-3.999-1.787-3.999-3.998s1.789-4,3.999-4h215.945 c2.219,0,3.999,1.789,3.999,4S358.131,311.987,355.912,311.987z\"></path><path style=\"fill:#3A3847;\" d=\"M508.001,311.987H451.89c-2.203,0-3.999-1.787-3.999-3.998s1.796-4,3.999-4h56.111 c2.203,0,3.999,1.789,3.999,4S510.204,311.987,508.001,311.987z\"></path><path style=\"fill:#3A3847;\" d=\"M499.878,271.997c-0.414,0-0.844-0.062-1.265-0.203l-23.995-8.002 c-2.093-0.695-3.218-2.959-2.522-5.057c0.695-2.093,2.944-3.222,5.054-2.527l23.994,7.994c2.093,0.703,3.233,2.969,2.53,5.062 C503.111,270.935,501.558,271.997,499.878,271.997z\"></path><path style=\"fill:#3A3847;\" d=\"M475.884,263.999c-2.202,0-3.999-1.789-3.999-3.998v-13.568c0-2.21,1.797-3.999,3.999-3.999 c2.218,0,3.999,1.789,3.999,3.999v13.568C479.883,262.21,478.102,263.999,475.884,263.999z\"></path></g></svg>";
 
 /***/ }),
 
