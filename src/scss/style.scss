@@ -1,29 +1,14 @@
-@import url(./_modalWindow.scss);
-@import url(./_loginForm.scss);
-@import url(./_carProfile.scss);
-
-:root {
-  --main-bg-color: #fff;
-  --color-text: #000;
-  --color-link: #007bff;
-  --blue: #007bff;
-  --red: #dc3545;
-  --orange: #fd7e14;
-  --yellow: #ffc107;
-  --green: #28a745;
-  --teal: #20c997;
-  --cyan: #17a2b8;
-  --white: #fff;
-  --gray: #6c757d;
-  --gray-dark: #343a40;
-  --gray-light: #d6d6d6;
-  --light: #f8f9fa;
-  --dark: #343a40;
-  --base-border-radius: 4px;
-}
+@import "./modalWindow";
+@import "./carProfile";
+@import "./carList";
+@import "./var";
+@import "./loginForm";
 
 html {
   box-sizing: border-box;
+  @media (max-width: $small) {
+    font-size: 12px;
+  }
 }
 
 *,
@@ -34,8 +19,35 @@ html {
 
 body {
   padding: 20px;
-  margin: 0;
+  max-width: 1200px;
+  margin: auto;
   font-family: "Exo 2", sans-serif;
+  background-color: $bg-color;
+  color: $black;
+  @media (max-width: $small) {
+    padding: 10px;
+  }
+}
+
+.btn {
+  width: fit-content;
+  height: 30px;
+  background-color: $green;
+  color: white;
+  border: none;
+  border-radius: $base-border-radius;
+  padding: 0 15px 0 15px;
+  transition: 0.5s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: $black;
+}
+
+.btn:disabled {
+  background-color: $color-disabled;
+  cursor: default;
 }
 
 .title {
@@ -43,13 +55,17 @@ body {
   text-align: center;
 }
 
+.main-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .main-menu__list {
   padding: 0;
   margin: 0;
   list-style: none;
-  border: 1px var(--gray-dark) solid;
   display: flex;
-  border-radius: var(--base-border-radius);
 }
 
 .main-menu li {
@@ -59,24 +75,30 @@ body {
 .main-menu__link {
   display: block;
   padding: 10px 25px;
-  color: var(--color-text);
   font-weight: 600;
   text-decoration: none;
+  transition: 0.5s;
+  @media (max-width: $small) {
+    padding: 10px 10px;
+  }
 }
 
 .main-menu__link:hover {
   text-decoration: none;
-  background-color: var(--gray-dark);
-  color: var(--white);
+  background-color: $black;
+  color: $white;
 }
 
 .main-menu__link.active {
   text-decoration: none;
-  background-color: var(--blue);
-  color: var(--white);
+  background-color: $green;
+  color: $white;
 }
 
 .content {
   padding: 1.5em 0;
 }
 
+.add-auto {
+  margin-bottom: 40px;
+}

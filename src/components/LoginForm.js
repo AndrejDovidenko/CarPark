@@ -6,9 +6,9 @@ class LoginView {
     <div class="login-form">
     <h1>Приветствую!</h1>
     <p>Залогинтесь пожалуйста</p>
-      <label>Email:<input type="email" class="email" /></label>
-      <label>Password:<input type="password" class="password" /></label>
-      <div class="buttons">
+      <label class="login-label">Email:<input type="email" class="email" /></label>
+      <label class="login-label">Password:<input type="password" class="password" /></label>
+      <div class="buttons-login-form">
         <button class="btn button-sign-in">Войти</button>
         <button class="btn button-sign-up">Создать аккаунт</button>
       </div>

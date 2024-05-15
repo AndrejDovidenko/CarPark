@@ -1,26 +1,23 @@
-// import { Timestamp } from "firebase/firestore";
-import CarProfile from "./CarProfile";
 import Firebase from "./FirebaseAPI";
 import NoteList from "./NoteList";
 
 class NoteModView {
   constructor() {
-    // this.date = date;
     this.container = null;
     this.description = null;
     this.costWork = null;
     this.mileage = null;
     this.buttonSave = null;
     this.partsList = null;
-    // this.addParts = null;
   }
 
   render() {
     return ` <div class="modal-window note-mod">
+    <span class=" close close-note-mod">&#10006;</span>
     <div class="info-block">
     <h2 class="date">${new Date().toDateString()}</h2>
     <label> Выполненые работы:
-    <input type="textarea" class="info-work-input description"/>
+    <textarea cols="50" rows="10" class="info-work-input description"/></textarea>
   </label>
   <label>Стоимость работ:
   <input type="number" class="info-work-input cost-work"/>
@@ -56,7 +53,6 @@ class NoteModView {
     this.mileage = document.querySelector(".mileage");
     this.partsList = this.container.querySelector(".parts-list");
     this.buttonSave = document.querySelector(".button-save-note");
-    // this.addParts = document.querySelector(".add-parts");
 
     if (data) {
       const string = data.list;
@@ -80,8 +76,6 @@ class NoteModView {
       this.buttonSave.classList.add("update");
       this.buttonSave.setAttribute("data-id", data.id);
       this.partsList.replaceWith(newPartsList);
-
-      // this.setDisabled(false, this.buttonSave);
     }
 
     this.container.classList.add("modal-window_open");
@@ -107,7 +101,6 @@ class NoteModView {
   renderPartsListItem(data) {
     const list = this.container.querySelector(".parts-list");
     const item = this.createPartsListItem(data);
-    // console.log(item);
 
     list.insertAdjacentHTML("beforeend", item);
 
@@ -120,7 +113,6 @@ class NoteModView {
 
   renderNoteBlock(data) {
     NoteList.view.renderNoteBlock(data);
-    // CarProfile.view.renderNoteBlock(data);
   }
 
   updateNoteBlock(data) {
@@ -129,7 +121,6 @@ class NoteModView {
 
   closeModalWindow() {
     this.setDisabled(true, this.buttonSave);
-    // this.setDisabled(true, this.addParts);
     this.container.classList.remove("modal-window_open");
   }
 
@@ -162,7 +153,6 @@ class NoteModModel {
       `${Firebase.pathUserCars}/${data.profileId}/parts`
     );
     const lastId = snapshot.docs[snapshot.docs.length - 1]?.id;
-    // console.log(lastId);
     if (!lastId) {
       data.id = "part1";
     } else {
@@ -175,7 +165,6 @@ class NoteModModel {
       data,
       `${Firebase.pathUserCars}/${data.profileId}/parts`
     );
-    // this.view.createPart(data);
     this.createPartsListItem(data);
   }
 
@@ -285,6 +274,8 @@ class NoteModController {
     const buttonRemove = event.target.closest(".button-remove");
     const buttonSave = event.target.closest(".button-save-note");
     const arrNotes = document.querySelectorAll(".note-block");
+    const closeIcon = event.target.closest(".close-note-mod");
+
     const lastId = arrNotes[arrNotes.length - 1]?.getAttribute("id");
 
     this.profileId = document.querySelector(".profile")?.id;
@@ -299,7 +290,6 @@ class NoteModController {
         timestamp: Date.now(),
       };
 
-      // this.model.createPartsListItem(data);
       this.model.createPart(data);
       this.model.setDisabled(true, this.buttonAdd);
     }
@@ -314,7 +304,6 @@ class NoteModController {
       this.container = document.querySelector(".modal-window");
       const partsList = this.container.querySelector(".parts-list");
       partsList.querySelectorAll(".button-remove").forEach((el) => el.remove());
-      //   console.log(this.partsList);
 
       const data = {
         description: this.description.value,
@@ -334,10 +323,13 @@ class NoteModController {
         this.model.createNote(data);
       }
 
-      // this.model.createNote(data);
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
-      // this.model.setDisabled(true, buttonSave);
+    }
+
+    if (closeIcon) {
+      this.model.closeModalWindow();
+      this.model.cleanModalWindow();
     }
   }
 }

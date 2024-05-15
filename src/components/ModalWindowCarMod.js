@@ -17,6 +17,7 @@ class ModalWindowView {
 
   render() {
     return ` <div class="modal-window car-mod">
+    <span class="close close-car-mod">&#10006;</span>
     <label>Марка
     <select class="car-info-input select-brand"></select>
   </label>
@@ -88,10 +89,6 @@ class ModalWindowView {
   setSelectedIndex(item, value) {
     item.selectedIndex = value;
   }
-
-  // renderCarList() {
-  //   CarList.render();
-  // }
 
   renderCarBlock(data) {
     CarList.view.renderCarBlock(data);
@@ -191,6 +188,7 @@ class ModalWindowController {
     const buttonSave = event.target.closest(".button-save");
     const arrCars = document.querySelectorAll(".car-block");
     const lastId = arrCars[arrCars.length - 1]?.getAttribute("id");
+    const closeIcon = event.target.closest(".close-car-mod");
 
     if (buttonSave) {
       const data = {
@@ -214,6 +212,11 @@ class ModalWindowController {
         this.model.createCar(data);
       }
 
+      this.model.cleanModalWindow();
+      this.model.closeModalWindow();
+    }
+
+    if (closeIcon) {
       this.model.cleanModalWindow();
       this.model.closeModalWindow();
     }

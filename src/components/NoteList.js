@@ -35,20 +35,22 @@ class NoteListView {
 
   createNoteBlock(data) {
     return `<div class="note-block" id="${data.id}">
+ <div class="info-note-list">
  <p>${data.description}</p>
  <p>Стоимость: ${data.cost}</p>
  <p>Пробег: ${data.mileage}</p>
  ${data.list} 
+ </div>
+ <div class="control">
  <button class="btn remove-note">Удалить</button>
  <button class="btn update-note">Изменить</button>
+ </div>
   </div>`;
   }
 
   renderNoteBlock(data) {
-    // const container = document.querySelector(".note-list");
     const block = this.createNoteBlock(data);
     this.container.insertAdjacentHTML("beforeend", block);
-    // console.log(block);
   }
 
   updateNoteBlock(data) {
@@ -66,6 +68,10 @@ class NoteListView {
 
   openModalWindow(data) {
     ModalWindowNoteMod.view.showModalWindow(data);
+  }
+
+  openText(item) {
+    item.classList.toggle("open-text");
   }
 }
 
@@ -86,6 +92,10 @@ class NoteListModel {
     );
 
     this.view.openModalWindow(data);
+  }
+
+  openText(item) {
+    this.view.openText(item);
   }
 }
 
@@ -112,8 +122,7 @@ class NoteListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          console.log("block");
-          // this.model.openCarProfile(clickBlock.id);
+          this.model.openText(clickBlock);
           break;
         case removeNote:
           const item = event.target.closest(".note-block");

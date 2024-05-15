@@ -19,7 +19,6 @@ class CarListView {
   }
 
   render() {
-    // this.a();
     this.renderCars()
       .then((html) => {
         this.container = document.querySelector("#car-list");
@@ -34,14 +33,18 @@ class CarListView {
 
   createCarBlock(data) {
     return `<div class="car-block" id="${data.id}">
+    <div class="info-car-list">
     <p>Марка:<span>${data.brand}</span></p>
     <p>Модель:<span>${data.model}</span></p>
     <p>Год:<span>${data.year}</span></p>
-    <p>Цвет:<span>${data.color}</span></p>
+    <p class="color">Цвет:<span style ="background-color:${data.color}"></span></p>
     <p>Регистрационный номер:<span>${data.carPlate}</span></p>
     <p>Пробег:<span>${data.mileage}</span></p>
+    </div>
+    <div class="control">
     <button class="btn remove">Удалить</button>
     <button class="btn edit">Изменить</button>
+    </div>
   </div>`;
   }
 
@@ -113,7 +116,6 @@ class CarListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          // console.log("block");
           this.model.openCarProfile(clickBlock.id);
           break;
         case buttonRemove:

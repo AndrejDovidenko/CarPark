@@ -1,22 +1,16 @@
 import "normalize.css";
 import "./scss/style.scss";
-// import "./components/Firebase.js";
-// import { app, db, auth, createUser } from "./components/firebase.js";
-// import Firebase from "./components/firebase.js";
 import Firebase from "./components/FirebaseAPI.js";
 import LoginForm from "./components/LoginForm.js";
 import Garage from "./pages/Garage.js";
 import About from "./pages/About.js";
 import Statistics from "./pages/Statistics.js";
-import ErrorPage from "./pages/ErrorPage.js";
 import Navbar from "./components/NavBar.js";
 import ContentContainer from "./components/ContentContainer.js";
-// import CarList from "./components/CarList.js";
 
 const components = {
   navbar: Navbar,
   content: ContentContainer,
-  // modal: ModalWindowCarMod,
 };
 
 const routes = {
@@ -24,7 +18,6 @@ const routes = {
   about: About,
   statistics: Statistics,
   default: Garage,
-  error: ErrorPage,
 };
 
 class MainView {
@@ -49,7 +42,7 @@ class MainView {
     let routeName = "default";
 
     if (_hashPageName.length > 0) {
-      routeName = _hashPageName in routes ? _hashPageName : "error";
+      routeName = _hashPageName in routes ? _hashPageName : "default";
     }
 
     window.document.title = routes[routeName].title;
@@ -76,10 +69,10 @@ class MainController {
   }
 
   addListeners() {
-    window.addEventListener("hashchange", () => this.updateState);
+    window.addEventListener("hashchange", () => this.updateState());
 
     this.mainContainer
-      .querySelector(".main-menu")
+      .querySelector(".main-menu__list")
       .addEventListener("click", (event) => {
         event.preventDefault();
         window.location.hash = event.target.getAttribute("href");
@@ -100,18 +93,15 @@ class MainController {
   updateState() {
     const hashPageName = location.hash.slice(1).toLowerCase();
     this.model.updateState(hashPageName);
-    // console.log(Firebase.pathUserCars);
   }
 }
 
 class Main {
   constructor(mainContainer) {
     this.mainContainer = mainContainer;
-    // Firebase.monitorAuthState();
   }
 
   renderLoginForm() {
-    // console.log(this.mainContainer);
     this.mainContainer.innerHTML = LoginForm.render();
   }
 

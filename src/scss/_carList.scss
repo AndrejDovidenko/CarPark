@@ -1,0 +1,71 @@
+.car-list {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  align-items: center;
+  gap: 20px;
+}
+
+.car-block {
+  display: flex;
+  align-items: center;
+  border-radius: $base-border-radius;
+  background-color: $white;
+  transition: 0.2s;
+  margin-top: 2px;
+  cursor: pointer;
+
+  p {
+    span {
+      padding-left: 10px;
+    }
+  }
+
+  .color {
+    display: flex;
+    span {
+      display: block;
+      width: 20px;
+      height: 20px;
+      margin-left: 10px;
+      border-radius: 50%;
+    }
+  }
+}
+
+.car-block:hover {
+  border: 2px solid $black;
+  transform: scale(1.02);
+}
+
+.car-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.car-list::-webkit-scrollbar-track {
+  background: #343a40;
+}
+
+.car-list::-webkit-scrollbar-thumb {
+  background-color: #efefef;
+
+  border: 2px solid #343a40;
+}
+
+.info-car-list {
+  max-width: 500px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  padding: 0 10px 0 20px;
+}
+
+.control {
+  display: flex;
+  gap: 10px;
+  padding: 0 10px 0 10px;
+  @media (max-width: $between) {
+    flex-direction: column;
+  }
+}

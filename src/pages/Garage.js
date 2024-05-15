@@ -9,7 +9,7 @@ class GarageView {
     return `
     <section class="main-page">
       <h1>Garage</h1>
-      <button class="btn main-page__btn ">Добавить авто
+      <button class="btn add-auto">Добавить авто
       </button>
     ${CarList.render()}
     ${ModalWindowCarMod.render()}
@@ -45,7 +45,7 @@ class GarageController {
 
   addListeners() {
     document.querySelector("#root").addEventListener("click", (event) => {
-      const buttonAdd = event.target.closest(".main-page__btn");
+      const buttonAdd = event.target.closest(".add-auto");
       if (buttonAdd) {
         this.model.openModalWindow();
       }
@@ -56,7 +56,7 @@ class GarageController {
 class GarageMain {
   constructor() {
     this.id = "main";
-    this.title = "Главная страница примера SPA";
+    this.title = "Главная страница";
     this.view = new GarageView();
     this.model = new GarageModel(this.view);
     this.controller = new GarageController(this.model);

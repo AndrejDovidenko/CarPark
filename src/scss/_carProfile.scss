@@ -1,3 +1,5 @@
+@import "./var";
+
 .profile {
   display: flex;
   flex-direction: column;
@@ -21,12 +23,76 @@
 }
 
 .note-list {
+  height: 40vh;
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
-  gap: 5px;
+  overflow: auto;
+  align-items: center;
+  gap: 20px;
+  margin-top: 40px;
 }
 
 .note-block {
-  border: 2px solid;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  border-radius: $base-border-radius;
+  background-color: $white;
+  transition: 0.2s;
+  margin: 1px 0 1px 0;
+  cursor: pointer;
+  p {
+    margin: 5px 0 5px 0;
+  }
+}
+
+.note-block.open-text {
+  height: auto;
+}
+
+.info-note-list {
+  height: 85%;
+  overflow-y: hidden;
+  width: 700px;
+  padding: 0px 10px 20px 20px;
+
+  @media (max-width: $tablet) {
+    width: 500px;
+  }
+
+  @media (max-width: $between) {
+    width: 400px;
+  }
+
+  @media (max-width: $mobile) {
+    width: 280px;
+  }
+
+  @media (max-width: $small) {
+    width: auto;
+  }
+}
+
+.installed-parts-list {
+  margin-top: 40px;
+  font-size: 1.5rem;
+}
+
+.note-block:hover {
+  border: 2px solid $black;
+  transform: scale(1.02);
+}
+
+.note-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.note-list::-webkit-scrollbar-track {
+  background: #343a40;
+}
+
+.note-list::-webkit-scrollbar-thumb {
+  background-color: #efefef;
+
+  border: 2px solid #343a40;
 }

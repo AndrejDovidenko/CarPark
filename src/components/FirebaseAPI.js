@@ -19,11 +19,9 @@ import {
   signInWithEmailAndPassword,
   onAuthStateChanged,
   signOut,
-  currentUser,
 } from "firebase/auth";
 import spa from "../main";
 import LoginForm from "./LoginForm";
-// import firebase from "firebase/compat/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCv0NijHKxa2raBAqVFVS5WoYdAA0iqLvU",
@@ -52,9 +50,6 @@ class FirebaseAPI {
 
   async getItemsArr(path) {
     const snapshot = await getDocs(query(collection(this.db, path)));
-
-    // console.log();
-    // console.log(x);
     return snapshot;
   }
 
@@ -75,10 +70,6 @@ class FirebaseAPI {
   async createDocUser(path, id, data = {}) {
     await setDoc(doc(this.db, path, id), data);
   }
-
-  // async createCollectionUser(path, id, data = {}) {
-  //   await addDoc(collection(this.db, path, id), data);
-  // }
 
   async createAccount(email, password) {
     try {
@@ -135,10 +126,6 @@ class FirebaseAPI {
   monitorAuthState() {
     onAuthStateChanged(this.myAuth, (user) => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/auth.user
-
-        // console.log(this);
         this.pathUserCars = `Users/${user.uid}/cars`;
         this.pathUserNotes = `Users/${user.uid}/notes`;
         this.pathUserParts = `Users/${user.uid}/parts`;
@@ -147,9 +134,6 @@ class FirebaseAPI {
       } else {
         spa.renderLoginForm();
         LoginForm.showInfo("Введите логин и пароль что бы войти!");
-        // console.log("ytdthysq kjuby");
-        // User is signed out
-        // ...
       }
     });
   }

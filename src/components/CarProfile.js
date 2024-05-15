@@ -17,12 +17,12 @@ class CarProfileView {
     return `<section class="profile" id="${data.id}">
     <div class="car-info">
     <div><h1>${data.brand} ${data.model}</h1>
-    <p>Год:<span>${data.year}</span></p>
-    <p>Цвет:<span>${data.color}</span></p>
-    <p>Регистрационный номер:<span>${data.carPlate}</span></p>
-    <p>Пробег:<span>${data.mileage}</span></p>
+    <p>Год:<span> ${data.year}</span></p>
+    <p>Цвет:<span> ${data.color}</span></p>
+    <p>Регистрационный номер:<span> ${data.carPlate}</span></p>
+    <p>Пробег:<span> ${data.mileage}</span></p>
     </div>
-    <div class="car-img"> ${this.carSvg.outerHTML}</div>
+    <div class="car-img">${this.carSvg.outerHTML}</div>
     </div>
     <div class="profile-control-panel">
     <button class = "btn history">История</button>
@@ -44,23 +44,27 @@ class CarProfileView {
   }
 
   renderNoteList(profileId) {
-    this.partsList.remove();
-    const list = `<div class="note-list" id ="note-list"></div>`;
-    this.container.insertAdjacentHTML("beforeend", list);
-    NoteList.render(profileId);
+    this.partsList = document.querySelector(".installed-parts-list");
+    this.partsList?.remove();
+    if (!document.querySelector(".note-list")) {
+      const list = `<div class="note-list" id ="note-list"></div>`;
+      this.container?.insertAdjacentHTML("beforeend", list);
+      NoteList.render(profileId);
+    }
   }
 
   renderParts(snapshot) {
     this.container = document.querySelector(".profile");
     this.partsList = document.createElement("ol");
+    this.partsList.classList.add("installed-parts-list");
     const noteList = document.querySelector(".note-list");
-    noteList.remove();
-
-    snapshot.forEach((el) => {
-      this.partsList.innerHTML += this.createPartsListItem(el.data());
-    });
-
-    this.container.append(this.partsList);
+    noteList?.remove();
+    if (!document.querySelector(".installed-parts-list")) {
+      snapshot.forEach((el) => {
+        this.partsList.innerHTML += this.createPartsListItem(el.data());
+      });
+      this.container.append(this.partsList);
+    }
   }
 }
 
@@ -109,7 +113,6 @@ class CarProfileController {
     if (clickBlock) {
       switch (clickButton) {
         case history:
-          // console.log("history");
           this.model.renderNoteList(this.profileId);
           break;
         case installedParts:
