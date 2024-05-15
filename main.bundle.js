@@ -20486,7 +20486,6 @@ class CarListView {
     return html;
   }
   render() {
-    // this.a();
     this.renderCars().then(html => {
       this.container = document.querySelector("#car-list");
       this.container.innerHTML = html;
@@ -20498,14 +20497,18 @@ class CarListView {
   }
   createCarBlock(data) {
     return `<div class="car-block" id="${data.id}">
+    <div class="info-car-list">
     <p>Марка:<span>${data.brand}</span></p>
     <p>Модель:<span>${data.model}</span></p>
     <p>Год:<span>${data.year}</span></p>
-    <p>Цвет:<span>${data.color}</span></p>
+    <p class="color">Цвет:<span style ="background-color:${data.color}"></span></p>
     <p>Регистрационный номер:<span>${data.carPlate}</span></p>
     <p>Пробег:<span>${data.mileage}</span></p>
+    </div>
+    <div class="control">
     <button class="btn remove">Удалить</button>
     <button class="btn edit">Изменить</button>
+    </div>
   </div>`;
   }
   renderCarBlock(data) {
@@ -20561,7 +20564,6 @@ class CarListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          // console.log("block");
           this.model.openCarProfile(clickBlock.id);
           break;
         case buttonRemove:
@@ -20634,12 +20636,12 @@ class CarProfileView {
     return `<section class="profile" id="${data.id}">
     <div class="car-info">
     <div><h1>${data.brand} ${data.model}</h1>
-    <p>Год:<span>${data.year}</span></p>
-    <p>Цвет:<span>${data.color}</span></p>
-    <p>Регистрационный номер:<span>${data.carPlate}</span></p>
-    <p>Пробег:<span>${data.mileage}</span></p>
+    <p>Год:<span> ${data.year}</span></p>
+    <p>Цвет:<span> ${data.color}</span></p>
+    <p>Регистрационный номер:<span> ${data.carPlate}</span></p>
+    <p>Пробег:<span> ${data.mileage}</span></p>
     </div>
-    <div class="car-img"> ${this.carSvg.outerHTML}</div>
+    <div class="car-img">${this.carSvg.outerHTML}</div>
     </div>
     <div class="profile-control-panel">
     <button class = "btn history">История</button>
@@ -20658,20 +20660,26 @@ class CarProfileView {
     _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__["default"].view.showModalWindow();
   }
   renderNoteList(profileId) {
-    this.partsList.remove();
-    const list = `<div class="note-list" id ="note-list"></div>`;
-    this.container.insertAdjacentHTML("beforeend", list);
-    _NoteList__WEBPACK_IMPORTED_MODULE_4__["default"].render(profileId);
+    this.partsList = document.querySelector(".installed-parts-list");
+    this.partsList?.remove();
+    if (!document.querySelector(".note-list")) {
+      const list = `<div class="note-list" id ="note-list"></div>`;
+      this.container?.insertAdjacentHTML("beforeend", list);
+      _NoteList__WEBPACK_IMPORTED_MODULE_4__["default"].render(profileId);
+    }
   }
   renderParts(snapshot) {
     this.container = document.querySelector(".profile");
     this.partsList = document.createElement("ol");
+    this.partsList.classList.add("installed-parts-list");
     const noteList = document.querySelector(".note-list");
-    noteList.remove();
-    snapshot.forEach(el => {
-      this.partsList.innerHTML += this.createPartsListItem(el.data());
-    });
-    this.container.append(this.partsList);
+    noteList?.remove();
+    if (!document.querySelector(".installed-parts-list")) {
+      snapshot.forEach(el => {
+        this.partsList.innerHTML += this.createPartsListItem(el.data());
+      });
+      this.container.append(this.partsList);
+    }
   }
 }
 class CarProfileModel {
@@ -20709,7 +20717,6 @@ class CarProfileController {
     if (clickBlock) {
       switch (clickButton) {
         case history:
-          // console.log("history");
           this.model.renderNoteList(this.profileId);
           break;
         case installedParts:
@@ -20776,8 +20783,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// import firebase from "firebase/compat/app";
-
 const firebaseConfig = {
   apiKey: "AIzaSyCv0NijHKxa2raBAqVFVS5WoYdAA0iqLvU",
   authDomain: "itacademyproject-66716.firebaseapp.com",
@@ -20802,9 +20807,6 @@ class FirebaseAPI {
   }
   async getItemsArr(path) {
     const snapshot = await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.getDocs)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.query)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.collection)(this.db, path)));
-
-    // console.log();
-    // console.log(x);
     return snapshot;
   }
   async getItem(path, id) {
@@ -20820,11 +20822,6 @@ class FirebaseAPI {
   async createDocUser(path, id, data = {}) {
     await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.setDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id), data);
   }
-
-  // async createCollectionUser(path, id, data = {}) {
-  //   await addDoc(collection(this.db, path, id), data);
-  // }
-
   async createAccount(email, password) {
     try {
       const userCredential = await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.createUserWithEmailAndPassword)(this.myAuth, email, password);
@@ -20867,10 +20864,6 @@ class FirebaseAPI {
   monitorAuthState() {
     (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.onAuthStateChanged)(this.myAuth, user => {
       if (user) {
-        // User is signed in, see docs for a list of available properties
-        // https://firebase.google.com/docs/reference/js/auth.user
-
-        // console.log(this);
         this.pathUserCars = `Users/${user.uid}/cars`;
         this.pathUserNotes = `Users/${user.uid}/notes`;
         this.pathUserParts = `Users/${user.uid}/parts`;
@@ -20878,9 +20871,6 @@ class FirebaseAPI {
       } else {
         _main__WEBPACK_IMPORTED_MODULE_3__["default"].renderLoginForm();
         _LoginForm__WEBPACK_IMPORTED_MODULE_4__["default"].showInfo("Введите логин и пароль что бы войти!");
-        // console.log("ytdthysq kjuby");
-        // User is signed out
-        // ...
       }
     });
   }
@@ -20911,9 +20901,9 @@ class LoginView {
     <div class="login-form">
     <h1>Приветствую!</h1>
     <p>Залогинтесь пожалуйста</p>
-      <label>Email:<input type="email" class="email" /></label>
-      <label>Password:<input type="password" class="password" /></label>
-      <div class="buttons">
+      <label class="login-label">Email:<input type="email" class="email" /></label>
+      <label class="login-label">Password:<input type="password" class="password" /></label>
+      <div class="buttons-login-form">
         <button class="btn button-sign-in">Войти</button>
         <button class="btn button-sign-up">Создать аккаунт</button>
       </div>
@@ -21011,6 +21001,7 @@ class ModalWindowView {
   }
   render() {
     return ` <div class="modal-window car-mod">
+    <span class="close close-car-mod">&#10006;</span>
     <label>Марка
     <select class="car-info-input select-brand"></select>
   </label>
@@ -21074,11 +21065,6 @@ class ModalWindowView {
   setSelectedIndex(item, value) {
     item.selectedIndex = value;
   }
-
-  // renderCarList() {
-  //   CarList.render();
-  // }
-
   renderCarBlock(data) {
     _CarList__WEBPACK_IMPORTED_MODULE_1__["default"].view.renderCarBlock(data);
   }
@@ -21159,6 +21145,7 @@ class ModalWindowController {
     const buttonSave = event.target.closest(".button-save");
     const arrCars = document.querySelectorAll(".car-block");
     const lastId = arrCars[arrCars.length - 1]?.getAttribute("id");
+    const closeIcon = event.target.closest(".close-car-mod");
     if (buttonSave) {
       const data = {
         brand: this.selectBrand.value,
@@ -21178,6 +21165,10 @@ class ModalWindowController {
       } else {
         this.model.createCar(data);
       }
+      this.model.cleanModalWindow();
+      this.model.closeModalWindow();
+    }
+    if (closeIcon) {
       this.model.cleanModalWindow();
       this.model.closeModalWindow();
     }
@@ -21254,30 +21245,26 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
-/* harmony import */ var _CarProfile__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./CarProfile */ "./src/components/CarProfile.js");
-/* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
-/* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
-// import { Timestamp } from "firebase/firestore";
-
+/* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
+/* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
 
 
 class NoteModView {
   constructor() {
-    // this.date = date;
     this.container = null;
     this.description = null;
     this.costWork = null;
     this.mileage = null;
     this.buttonSave = null;
     this.partsList = null;
-    // this.addParts = null;
   }
   render() {
     return ` <div class="modal-window note-mod">
+    <span class=" close close-note-mod">&#10006;</span>
     <div class="info-block">
     <h2 class="date">${new Date().toDateString()}</h2>
     <label> Выполненые работы:
-    <input type="textarea" class="info-work-input description"/>
+    <textarea cols="50" rows="10" class="info-work-input description"/></textarea>
   </label>
   <label>Стоимость работ:
   <input type="number" class="info-work-input cost-work"/>
@@ -21312,8 +21299,6 @@ class NoteModView {
     this.mileage = document.querySelector(".mileage");
     this.partsList = this.container.querySelector(".parts-list");
     this.buttonSave = document.querySelector(".button-save-note");
-    // this.addParts = document.querySelector(".add-parts");
-
     if (data) {
       const string = data.list;
       const newPartsList = new DOMParser().parseFromString(string, "text/html").querySelector(".parts-list");
@@ -21325,8 +21310,6 @@ class NoteModView {
       this.buttonSave.classList.add("update");
       this.buttonSave.setAttribute("data-id", data.id);
       this.partsList.replaceWith(newPartsList);
-
-      // this.setDisabled(false, this.buttonSave);
     }
     this.container.classList.add("modal-window_open");
   }
@@ -21347,8 +21330,6 @@ class NoteModView {
   renderPartsListItem(data) {
     const list = this.container.querySelector(".parts-list");
     const item = this.createPartsListItem(data);
-    // console.log(item);
-
     list.insertAdjacentHTML("beforeend", item);
     this.cleanInfoParts();
   }
@@ -21356,15 +21337,13 @@ class NoteModView {
     item.remove();
   }
   renderNoteBlock(data) {
-    _NoteList__WEBPACK_IMPORTED_MODULE_2__["default"].view.renderNoteBlock(data);
-    // CarProfile.view.renderNoteBlock(data);
+    _NoteList__WEBPACK_IMPORTED_MODULE_1__["default"].view.renderNoteBlock(data);
   }
   updateNoteBlock(data) {
-    _NoteList__WEBPACK_IMPORTED_MODULE_2__["default"].view.updateNoteBlock(data);
+    _NoteList__WEBPACK_IMPORTED_MODULE_1__["default"].view.updateNoteBlock(data);
   }
   closeModalWindow() {
     this.setDisabled(true, this.buttonSave);
-    // this.setDisabled(true, this.addParts);
     this.container.classList.remove("modal-window_open");
   }
   cleanModalWindow() {
@@ -21387,22 +21366,20 @@ class NoteModModel {
     this.view.renderPartsListItem(data);
   }
   async createPart(data) {
-    const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/parts`);
+    const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/parts`);
     const lastId = snapshot.docs[snapshot.docs.length - 1]?.id;
-    // console.log(lastId);
     if (!lastId) {
       data.id = "part1";
     } else {
       const index = Number(lastId[lastId.length - 1]) + 1;
       data.id = "part" + index;
     }
-    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/parts`);
-    // this.view.createPart(data);
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/parts`);
     this.createPartsListItem(data);
   }
   removeItem(item, profileId) {
     this.view.removeItem(item);
-    _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].deleteItem(item.id, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/parts`);
+    _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].deleteItem(item.id, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${profileId}/parts`);
   }
   async createNote(data) {
     if (!data.id) {
@@ -21411,11 +21388,11 @@ class NoteModModel {
       const index = Number(data.id[data.id.length - 1]) + 1;
       data.id = "note" + index;
     }
-    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/notes`);
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/notes`);
     this.view.renderNoteBlock(data);
   }
   async updateNote(data) {
-    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${data.profileId}/notes`);
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/notes`);
     this.view.updateNoteBlock(data);
   }
   closeModalWindow() {
@@ -21474,6 +21451,7 @@ class NoteModController {
     const buttonRemove = event.target.closest(".button-remove");
     const buttonSave = event.target.closest(".button-save-note");
     const arrNotes = document.querySelectorAll(".note-block");
+    const closeIcon = event.target.closest(".close-note-mod");
     const lastId = arrNotes[arrNotes.length - 1]?.getAttribute("id");
     this.profileId = document.querySelector(".profile")?.id;
     if (buttonAdd) {
@@ -21485,8 +21463,6 @@ class NoteModController {
         profileId: this.profileId,
         timestamp: Date.now()
       };
-
-      // this.model.createPartsListItem(data);
       this.model.createPart(data);
       this.model.setDisabled(true, this.buttonAdd);
     }
@@ -21498,8 +21474,6 @@ class NoteModController {
       this.container = document.querySelector(".modal-window");
       const partsList = this.container.querySelector(".parts-list");
       partsList.querySelectorAll(".button-remove").forEach(el => el.remove());
-      //   console.log(this.partsList);
-
       const data = {
         description: this.description.value,
         cost: this.costWork.value,
@@ -21515,11 +21489,12 @@ class NoteModController {
       } else {
         this.model.createNote(data);
       }
-
-      // this.model.createNote(data);
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
-      // this.model.setDisabled(true, buttonSave);
+    }
+    if (closeIcon) {
+      this.model.closeModalWindow();
+      this.model.cleanModalWindow();
     }
   }
 }
@@ -21557,8 +21532,8 @@ const NavBar = {
           <li><a class="main-menu__link" href="#statistics">Статистика</a></li>
           <li><a class="main-menu__link" href="#about">О нас</a></li>
         </ul>
+        <button class="btn exit">Выход</button>
         </nav>
-        <button class="exit">exit</button>
     `;
   }
 };
@@ -21604,19 +21579,21 @@ class NoteListView {
   }
   createNoteBlock(data) {
     return `<div class="note-block" id="${data.id}">
+ <div class="info-note-list">
  <p>${data.description}</p>
  <p>Стоимость: ${data.cost}</p>
  <p>Пробег: ${data.mileage}</p>
  ${data.list} 
+ </div>
+ <div class="control">
  <button class="btn remove-note">Удалить</button>
  <button class="btn update-note">Изменить</button>
+ </div>
   </div>`;
   }
   renderNoteBlock(data) {
-    // const container = document.querySelector(".note-list");
     const block = this.createNoteBlock(data);
     this.container.insertAdjacentHTML("beforeend", block);
-    // console.log(block);
   }
   updateNoteBlock(data) {
     const block = this.container.querySelector(`#${data.id}`);
@@ -21628,6 +21605,9 @@ class NoteListView {
   }
   openModalWindow(data) {
     _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_0__["default"].view.showModalWindow(data);
+  }
+  openText(item) {
+    item.classList.toggle("open-text");
   }
 }
 class NoteListModel {
@@ -21641,6 +21621,9 @@ class NoteListModel {
   async openModalWindow(itemId, profileId) {
     const data = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].getItem(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__["default"].pathUserCars}/${profileId}/notes`, itemId);
     this.view.openModalWindow(data);
+  }
+  openText(item) {
+    this.view.openText(item);
   }
 }
 class NoteListController {
@@ -21662,8 +21645,7 @@ class NoteListController {
     if (clickBlock) {
       switch (clickButton) {
         case null:
-          console.log("block");
-          // this.model.openCarProfile(clickBlock.id);
+          this.model.openText(clickBlock);
           break;
         case removeNote:
           const item = event.target.closest(".note-block");
@@ -21748,14 +21730,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Garage_js__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./pages/Garage.js */ "./src/pages/Garage.js");
 /* harmony import */ var _pages_About_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./pages/About.js */ "./src/pages/About.js");
 /* harmony import */ var _pages_Statistics_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/Statistics.js */ "./src/pages/Statistics.js");
-/* harmony import */ var _pages_ErrorPage_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./pages/ErrorPage.js */ "./src/pages/ErrorPage.js");
-/* harmony import */ var _components_NavBar_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/NavBar.js */ "./src/components/NavBar.js");
-/* harmony import */ var _components_ContentContainer_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./components/ContentContainer.js */ "./src/components/ContentContainer.js");
-
-
-// import "./components/Firebase.js";
-// import { app, db, auth, createUser } from "./components/firebase.js";
-// import Firebase from "./components/firebase.js";
+/* harmony import */ var _components_NavBar_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/NavBar.js */ "./src/components/NavBar.js");
+/* harmony import */ var _components_ContentContainer_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/ContentContainer.js */ "./src/components/ContentContainer.js");
 
 
 
@@ -21764,19 +21740,16 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-// import CarList from "./components/CarList.js";
 
 const components = {
-  navbar: _components_NavBar_js__WEBPACK_IMPORTED_MODULE_8__["default"],
-  content: _components_ContentContainer_js__WEBPACK_IMPORTED_MODULE_9__["default"]
-  // modal: ModalWindowCarMod,
+  navbar: _components_NavBar_js__WEBPACK_IMPORTED_MODULE_7__["default"],
+  content: _components_ContentContainer_js__WEBPACK_IMPORTED_MODULE_8__["default"]
 };
 const routes = {
   main: _pages_Garage_js__WEBPACK_IMPORTED_MODULE_4__["default"],
   about: _pages_About_js__WEBPACK_IMPORTED_MODULE_5__["default"],
   statistics: _pages_Statistics_js__WEBPACK_IMPORTED_MODULE_6__["default"],
-  default: _pages_Garage_js__WEBPACK_IMPORTED_MODULE_4__["default"],
-  error: _pages_ErrorPage_js__WEBPACK_IMPORTED_MODULE_7__["default"]
+  default: _pages_Garage_js__WEBPACK_IMPORTED_MODULE_4__["default"]
 };
 class MainView {
   constructor(mainContainer, routes) {
@@ -21794,7 +21767,7 @@ class MainView {
   renderContent(_hashPageName) {
     let routeName = "default";
     if (_hashPageName.length > 0) {
-      routeName = _hashPageName in routes ? _hashPageName : "error";
+      routeName = _hashPageName in routes ? _hashPageName : "default";
     }
     window.document.title = routes[routeName].title;
     this.contentContainer.innerHTML = routes[routeName].render();
@@ -21816,8 +21789,8 @@ class MainController {
     this.addListeners();
   }
   addListeners() {
-    window.addEventListener("hashchange", () => this.updateState);
-    this.mainContainer.querySelector(".main-menu").addEventListener("click", event => {
+    window.addEventListener("hashchange", () => this.updateState());
+    this.mainContainer.querySelector(".main-menu__list").addEventListener("click", event => {
       event.preventDefault();
       window.location.hash = event.target.getAttribute("href");
       this.updateState();
@@ -21833,16 +21806,13 @@ class MainController {
   updateState() {
     const hashPageName = location.hash.slice(1).toLowerCase();
     this.model.updateState(hashPageName);
-    // console.log(Firebase.pathUserCars);
   }
 }
 class Main {
   constructor(mainContainer) {
     this.mainContainer = mainContainer;
-    // Firebase.monitorAuthState();
   }
   renderLoginForm() {
-    // console.log(this.mainContainer);
     this.mainContainer.innerHTML = _components_LoginForm_js__WEBPACK_IMPORTED_MODULE_3__["default"].render();
   }
   openUserProfile() {
@@ -21877,43 +21847,17 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 const About = {
   id: "about",
-  title: "Какой-то описательный текст данного SPA",
+  title: "О проекте",
   render: (className = "container", ...rest) => {
     return `
       <section class="${className}">
         <h1>О нас</h1>
-        <p>А здесь что-то как бы <strong>О нас</strong> или о них =)</p>
+        <p>Информация о проекте</p>
       </section>
     `;
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (About);
-
-/***/ }),
-
-/***/ "./src/pages/ErrorPage.js":
-/*!********************************!*\
-  !*** ./src/pages/ErrorPage.js ***!
-  \********************************/
-/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-const ErrorPage = {
-  id: "error",
-  title: "Achtung, warning, kujdes, attenzione, pozornost...",
-  render: (className = "container", ...rest) => {
-    return `
-      <section class="${className}">
-        <h1>Ошибка 404</h1>
-        <p>Страница не найдена, попробуйте вернуться на <a href="#main">главную</a>.</p>
-      </section>
-    `;
-  }
-};
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ErrorPage);
 
 /***/ }),
 
@@ -21940,7 +21884,7 @@ class GarageView {
     return `
     <section class="main-page">
       <h1>Garage</h1>
-      <button class="btn main-page__btn ">Добавить авто
+      <button class="btn add-auto">Добавить авто
       </button>
     ${_components_CarList__WEBPACK_IMPORTED_MODULE_1__["default"].render()}
     ${_components_ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_0__["default"].render()}
@@ -21970,7 +21914,7 @@ class GarageController {
   }
   addListeners() {
     document.querySelector("#root").addEventListener("click", event => {
-      const buttonAdd = event.target.closest(".main-page__btn");
+      const buttonAdd = event.target.closest(".add-auto");
       if (buttonAdd) {
         this.model.openModalWindow();
       }
@@ -21980,7 +21924,7 @@ class GarageController {
 class GarageMain {
   constructor() {
     this.id = "main";
-    this.title = "Главная страница примера SPA";
+    this.title = "Главная страница";
     this.view = new GarageView();
     this.model = new GarageModel(this.view);
     this.controller = new GarageController(this.model);
@@ -22006,12 +21950,12 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 const Statistics = {
   id: "statistics",
-  title: "Ну и страница Контакты, как без нее?",
+  title: "Статистика",
   render: (className = "container", ...rest) => {
     return `
       <section class="${className}">
         <h1>Статистика</h1>
-        <p>Ну а тут классически будет страница <strong>Контакты</strong>.</p>
+        <p> Тут будет статистика!</p>
       </section>
     `;
   }
@@ -22367,42 +22311,267 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
 /* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _node_modules_css_loader_dist_cjs_js_modalWindow_scss__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_modalWindow.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_modalWindow.scss");
-/* harmony import */ var _node_modules_css_loader_dist_cjs_js_loginForm_scss__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_loginForm.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_loginForm.scss");
-/* harmony import */ var _node_modules_css_loader_dist_cjs_js_carProfile_scss__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! -!../../node_modules/css-loader/dist/cjs.js!./_carProfile.scss */ "./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss");
 // Imports
 
 
-
-
-
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
-___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_modalWindow_scss__WEBPACK_IMPORTED_MODULE_2__["default"]);
-___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_loginForm_scss__WEBPACK_IMPORTED_MODULE_3__["default"]);
-___CSS_LOADER_EXPORT___.i(_node_modules_css_loader_dist_cjs_js_carProfile_scss__WEBPACK_IMPORTED_MODULE_4__["default"]);
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, `:root {
-  --main-bg-color: #fff;
-  --color-text: #000;
-  --color-link: #007bff;
-  --blue: #007bff;
-  --red: #dc3545;
-  --orange: #fd7e14;
-  --yellow: #ffc107;
-  --green: #28a745;
-  --teal: #20c997;
-  --cyan: #17a2b8;
-  --white: #fff;
-  --gray: #6c757d;
-  --gray-dark: #343a40;
-  --gray-light: #d6d6d6;
-  --light: #f8f9fa;
-  --dark: #343a40;
-  --base-border-radius: 4px;
+___CSS_LOADER_EXPORT___.push([module.id, `.modal-window {
+  display: none;
+  flex-direction: column;
+  width: 80vw;
+  height: auto;
+  border: none;
+  border-radius: 10px;
+  gap: 1rem;
+  padding: 2rem;
+  background-color: #def2f1;
+}
+
+.close {
+  position: absolute;
+  right: 10px;
+  top: 10px;
+  cursor: pointer;
+}
+
+.modal-window_open {
+  position: absolute;
+  display: flex;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+label {
+  display: flex;
+  justify-content: space-between;
+}
+label input {
+  width: 30%;
+  height: 2rem;
+  border-radius: 10px;
+  border: none;
+}
+label select {
+  width: 30%;
+  height: 2rem;
+  border-radius: 10px;
+  border: none;
+}
+
+.info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.info-parts {
+  padding-top: 20px;
+}
+
+.profile {
+  display: flex;
+  flex-direction: column;
+}
+
+.car-info {
+  display: flex;
+  justify-content: space-around;
+}
+
+.car-img svg {
+  width: 100%;
+  height: 100%;
+}
+
+.profile-control-panel {
+  display: flex;
+  justify-content: space-around;
+}
+
+.note-list {
+  height: 40vh;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  align-items: center;
+  gap: 20px;
+  margin-top: 40px;
+}
+
+.note-block {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  background-color: #fff;
+  transition: 0.2s;
+  margin: 1px 0 1px 0;
+  cursor: pointer;
+}
+.note-block p {
+  margin: 5px 0 5px 0;
+}
+
+.note-block.open-text {
+  height: auto;
+}
+
+.info-note-list {
+  height: 85%;
+  overflow-y: hidden;
+  width: 700px;
+  padding: 0px 10px 20px 20px;
+}
+@media (max-width: 1100px) {
+  .info-note-list {
+    width: 500px;
+  }
+}
+@media (max-width: 800px) {
+  .info-note-list {
+    width: 400px;
+  }
+}
+@media (max-width: 600px) {
+  .info-note-list {
+    width: 280px;
+  }
+}
+@media (max-width: 470px) {
+  .info-note-list {
+    width: auto;
+  }
+}
+
+.installed-parts-list {
+  margin-top: 40px;
+  font-size: 1.5rem;
+}
+
+.note-block:hover {
+  border: 2px solid #17252a;
+  transform: scale(1.02);
+}
+
+.note-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.note-list::-webkit-scrollbar-track {
+  background: #343a40;
+}
+
+.note-list::-webkit-scrollbar-thumb {
+  background-color: #efefef;
+  border: 2px solid #343a40;
+}
+
+.car-list {
+  height: 60vh;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  align-items: center;
+  gap: 20px;
+}
+
+.car-block {
+  display: flex;
+  align-items: center;
+  border-radius: 10px;
+  background-color: #fff;
+  transition: 0.2s;
+  margin-top: 2px;
+  cursor: pointer;
+}
+.car-block p span {
+  padding-left: 10px;
+}
+.car-block .color {
+  display: flex;
+}
+.car-block .color span {
+  display: block;
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  border-radius: 50%;
+}
+
+.car-block:hover {
+  border: 2px solid #17252a;
+  transform: scale(1.02);
+}
+
+.car-list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.car-list::-webkit-scrollbar-track {
+  background: #343a40;
+}
+
+.car-list::-webkit-scrollbar-thumb {
+  background-color: #efefef;
+  border: 2px solid #343a40;
+}
+
+.info-car-list {
+  max-width: 500px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 20px;
+  padding: 0 10px 0 20px;
+}
+
+.control {
+  display: flex;
+  gap: 10px;
+  padding: 0 10px 0 10px;
+}
+@media (max-width: 800px) {
+  .control {
+    flex-direction: column;
+  }
+}
+
+.login-form {
+  transform: translateY(50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.login-label {
+  width: 300px;
+  display: flex;
+  justify-content: space-between;
+}
+.login-label input {
+  width: 200px;
+}
+
+.buttons-login-form {
+  width: 300px;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 10px;
+}
+
+.info-login-form {
+  color: red;
 }
 
 html {
   box-sizing: border-box;
+}
+@media (max-width: 470px) {
+  html {
+    font-size: 12px;
+  }
 }
 
 *,
@@ -22413,8 +22582,37 @@ html {
 
 body {
   padding: 20px;
-  margin: 0;
+  max-width: 1200px;
+  margin: auto;
   font-family: "Exo 2", sans-serif;
+  background-color: aliceblue;
+  color: #17252a;
+}
+@media (max-width: 470px) {
+  body {
+    padding: 10px;
+  }
+}
+
+.btn {
+  width: fit-content;
+  height: 30px;
+  background-color: #2b7a78;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0 15px 0 15px;
+  transition: 0.5s;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #17252a;
+}
+
+.btn:disabled {
+  background-color: rgba(43, 122, 120, 0.3764705882);
+  cursor: default;
 }
 
 .title {
@@ -22422,13 +22620,17 @@ body {
   text-align: center;
 }
 
+.main-menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
 .main-menu__list {
   padding: 0;
   margin: 0;
   list-style: none;
-  border: 1px var(--gray-dark) solid;
   display: flex;
-  border-radius: var(--base-border-radius);
 }
 
 .main-menu li {
@@ -22438,167 +22640,35 @@ body {
 .main-menu__link {
   display: block;
   padding: 10px 25px;
-  color: var(--color-text);
   font-weight: 600;
   text-decoration: none;
+  transition: 0.5s;
+}
+@media (max-width: 470px) {
+  .main-menu__link {
+    padding: 10px 10px;
+  }
 }
 
 .main-menu__link:hover {
   text-decoration: none;
-  background-color: var(--gray-dark);
-  color: var(--white);
+  background-color: #17252a;
+  color: #fff;
 }
 
 .main-menu__link.active {
   text-decoration: none;
-  background-color: var(--blue);
-  color: var(--white);
+  background-color: #2b7a78;
+  color: #fff;
 }
 
 .content {
   padding: 1.5em 0;
-}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss"],"names":[],"mappings":"AAIA;EACE,qBAAA;EACA,kBAAA;EACA,qBAAA;EACA,eAAA;EACA,cAAA;EACA,iBAAA;EACA,iBAAA;EACA,gBAAA;EACA,eAAA;EACA,eAAA;EACA,aAAA;EACA,eAAA;EACA,oBAAA;EACA,qBAAA;EACA,gBAAA;EACA,eAAA;EACA,yBAAA;AAAF;;AAGA;EACE,sBAAA;AAAF;;AAGA;;;EAGE,mBAAA;AAAF;;AAGA;EACE,aAAA;EACA,SAAA;EACA,gCAAA;AAAF;;AAGA;EACE,eAAA;EACA,kBAAA;AAAF;;AAGA;EACE,UAAA;EACA,SAAA;EACA,gBAAA;EACA,kCAAA;EACA,aAAA;EACA,wCAAA;AAAF;;AAGA;EACE,gBAAA;AAAF;;AAGA;EACE,cAAA;EACA,kBAAA;EACA,wBAAA;EACA,gBAAA;EACA,qBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,kCAAA;EACA,mBAAA;AAAF;;AAGA;EACE,qBAAA;EACA,6BAAA;EACA,mBAAA;AAAF;;AAGA;EACE,gBAAA;AAAF","sourcesContent":["@import url(./_modalWindow.scss);\r\n@import url(./_loginForm.scss);\r\n@import url(./_carProfile.scss);\r\n\r\n:root {\r\n  --main-bg-color: #fff;\r\n  --color-text: #000;\r\n  --color-link: #007bff;\r\n  --blue: #007bff;\r\n  --red: #dc3545;\r\n  --orange: #fd7e14;\r\n  --yellow: #ffc107;\r\n  --green: #28a745;\r\n  --teal: #20c997;\r\n  --cyan: #17a2b8;\r\n  --white: #fff;\r\n  --gray: #6c757d;\r\n  --gray-dark: #343a40;\r\n  --gray-light: #d6d6d6;\r\n  --light: #f8f9fa;\r\n  --dark: #343a40;\r\n  --base-border-radius: 4px;\r\n}\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  margin: 0;\r\n  font-family: \"Exo 2\", sans-serif;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  border: 1px var(--gray-dark) solid;\r\n  display: flex;\r\n  border-radius: var(--base-border-radius);\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  color: var(--color-text);\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: var(--gray-dark);\r\n  color: var(--white);\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: var(--blue);\r\n  color: var(--white);\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n"],"sourceRoot":""}]);
-// Exports
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
-
-
-/***/ }),
-
-/***/ "./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss":
-/*!*************************************************************************!*\
-  !*** ./node_modules/css-loader/dist/cjs.js!./src/scss/_carProfile.scss ***!
-  \*************************************************************************/
-/***/ ((module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
-// Imports
-
-
-var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
-// Module
-___CSS_LOADER_EXPORT___.push([module.id, `.profile {
-  display: flex;
-  flex-direction: column;
 }
 
-.car-info {
-  display: flex;
-  justify-content: space-around;
-}
-
-.car-img {
-  svg {
-    width: 100%;
-    height: 100%;
-  }
-}
-
-.profile-control-panel {
-  display: flex;
-  justify-content: space-around;
-}
-
-.note-list {
-  display: flex;
-  flex-direction: column;
-  margin-top: 20px;
-  gap: 5px;
-}
-
-.note-block {
-  border: 2px solid;
-}
-`, "",{"version":3,"sources":["webpack://./src/scss/_carProfile.scss"],"names":[],"mappings":"AAAA;EACE,aAAa;EACb,sBAAsB;AACxB;;AAEA;EACE,aAAa;EACb,6BAA6B;AAC/B;;AAEA;EACE;IACE,WAAW;IACX,YAAY;EACd;AACF;;AAEA;EACE,aAAa;EACb,6BAA6B;AAC/B;;AAEA;EACE,aAAa;EACb,sBAAsB;EACtB,gBAAgB;EAChB,QAAQ;AACV;;AAEA;EACE,iBAAiB;AACnB","sourcesContent":[".profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  display: flex;\r\n  flex-direction: column;\r\n  margin-top: 20px;\r\n  gap: 5px;\r\n}\r\n\r\n.note-block {\r\n  border: 2px solid;\r\n}\r\n"],"sourceRoot":""}]);
-// Exports
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
-
-
-/***/ }),
-
-/***/ "./node_modules/css-loader/dist/cjs.js!./src/scss/_loginForm.scss":
-/*!************************************************************************!*\
-  !*** ./node_modules/css-loader/dist/cjs.js!./src/scss/_loginForm.scss ***!
-  \************************************************************************/
-/***/ ((module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
-// Imports
-
-
-var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
-// Module
-___CSS_LOADER_EXPORT___.push([module.id, `
-`, "",{"version":3,"sources":[],"names":[],"mappings":"","sourceRoot":""}]);
-// Exports
-/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
-
-
-/***/ }),
-
-/***/ "./node_modules/css-loader/dist/cjs.js!./src/scss/_modalWindow.scss":
-/*!**************************************************************************!*\
-  !*** ./node_modules/css-loader/dist/cjs.js!./src/scss/_modalWindow.scss ***!
-  \**************************************************************************/
-/***/ ((module, __webpack_exports__, __webpack_require__) => {
-
-__webpack_require__.r(__webpack_exports__);
-/* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
-/* harmony export */ });
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/sourceMaps.js */ "./node_modules/css-loader/dist/runtime/sourceMaps.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../../node_modules/css-loader/dist/runtime/api.js */ "./node_modules/css-loader/dist/runtime/api.js");
-/* harmony import */ var _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(_node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1__);
-// Imports
-
-
-var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
-// Module
-___CSS_LOADER_EXPORT___.push([module.id, `.modal-window {
-  display: none;
-  flex-direction: column;
-  width: 80vw;
-  height: 80vh;
-  border: solid 2px;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: aliceblue;
-}
-
-.modal-window_open {
-  position: absolute;
-  display: flex;
-
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-label {
-  display: flex;
-  justify-content: space-between;
-  input {
-    width: 20%;
-  }
-  select {
-    width: 20%;
-  }
-}
-`, "",{"version":3,"sources":["webpack://./src/scss/_modalWindow.scss"],"names":[],"mappings":"AAAA;EACE,aAAa;EACb,sBAAsB;EACtB,WAAW;EACX,YAAY;EACZ,iBAAiB;EACjB,SAAS;EACT,aAAa;EACb,2BAA2B;AAC7B;;AAEA;EACE,kBAAkB;EAClB,aAAa;;EAEb,QAAQ;EACR,SAAS;EACT,gCAAgC;AAClC;;AAEA;EACE,aAAa;EACb,8BAA8B;EAC9B;IACE,UAAU;EACZ;EACA;IACE,UAAU;EACZ;AACF","sourcesContent":[".modal-window {\r\n  display: none;\r\n  flex-direction: column;\r\n  width: 80vw;\r\n  height: 80vh;\r\n  border: solid 2px;\r\n  gap: 1rem;\r\n  padding: 1rem;\r\n  background-color: aliceblue;\r\n}\r\n\r\n.modal-window_open {\r\n  position: absolute;\r\n  display: flex;\r\n\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 20%;\r\n  }\r\n  select {\r\n    width: 20%;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
+.add-auto {
+  margin-bottom: 40px;
+}`, "",{"version":3,"sources":["webpack://./src/scss/_modalWindow.scss","webpack://./src/scss/_var.scss","webpack://./src/scss/style.scss","webpack://./src/scss/_carProfile.scss","webpack://./src/scss/_carList.scss","webpack://./src/scss/_loginForm.scss"],"names":[],"mappings":"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","sourcesContent":["@import \"./var\";\r\n\r\n.modal-window {\r\n  display: none;\r\n  flex-direction: column;\r\n  width: 80vw;\r\n  height: auto;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  gap: 1rem;\r\n  padding: 2rem;\r\n  background-color: $bg-color-modal;\r\n}\r\n\r\n.close {\r\n  position: absolute;\r\n  right: 10px;\r\n  top: 10px;\r\n  cursor: pointer;\r\n}\r\n\r\n.modal-window_open {\r\n  position: absolute;\r\n  display: flex;\r\n\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n  }\r\n  select {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n  }\r\n}\r\n\r\n.info-block {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n}\r\n\r\n.info-parts {\r\n  padding-top: 20px;\r\n}\r\n","$bg-color: aliceblue;\r\n$bg-color-modal: #def2f1;\r\n$white: #fff;\r\n$col: #444444;\r\n$base-border-radius: 10px;\r\n$green: #2b7a78;\r\n$black: #17252a;\r\n$color-disabled: #2b7a7860;\r\n\r\n$tablet: 1100px;\r\n$between: 800px;\r\n$mobile: 600px;\r\n$small: 470px;\r\n","@import \"./modalWindow\";\r\n@import \"./carProfile\";\r\n@import \"./carList\";\r\n@import \"./var\";\r\n@import \"./loginForm\";\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n  @media (max-width: $small) {\r\n    font-size: 12px;\r\n  }\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  max-width: 1200px;\r\n  margin: auto;\r\n  font-family: \"Exo 2\", sans-serif;\r\n  background-color: $bg-color;\r\n  color: $black;\r\n  @media (max-width: $small) {\r\n    padding: 10px;\r\n  }\r\n}\r\n\r\n.btn {\r\n  width: fit-content;\r\n  height: 30px;\r\n  background-color: $green;\r\n  color: white;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  padding: 0 15px 0 15px;\r\n  transition: 0.5s;\r\n  cursor: pointer;\r\n}\r\n\r\n.btn:hover {\r\n  background-color: $black;\r\n}\r\n\r\n.btn:disabled {\r\n  background-color: $color-disabled;\r\n  cursor: default;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  display: flex;\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n  transition: 0.5s;\r\n  @media (max-width: $small) {\r\n    padding: 10px 10px;\r\n  }\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: $black;\r\n  color: $white;\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: $green;\r\n  color: $white;\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n.add-auto {\r\n  margin-bottom: 40px;\r\n}\r\n","@import \"./var\";\r\n\r\n.profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  height: 40vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  margin-top: 40px;\r\n}\r\n\r\n.note-block {\r\n  height: 100px;\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin: 1px 0 1px 0;\r\n  cursor: pointer;\r\n  p {\r\n    margin: 5px 0 5px 0;\r\n  }\r\n}\r\n\r\n.note-block.open-text {\r\n  height: auto;\r\n}\r\n\r\n.info-note-list {\r\n  height: 85%;\r\n  overflow-y: hidden;\r\n  width: 700px;\r\n  padding: 0px 10px 20px 20px;\r\n\r\n  @media (max-width: $tablet) {\r\n    width: 500px;\r\n  }\r\n\r\n  @media (max-width: $between) {\r\n    width: 400px;\r\n  }\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 280px;\r\n  }\r\n\r\n  @media (max-width: $small) {\r\n    width: auto;\r\n  }\r\n}\r\n\r\n.installed-parts-list {\r\n  margin-top: 40px;\r\n  font-size: 1.5rem;\r\n}\r\n\r\n.note-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.note-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-track {\r\n  background: #343a40;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-thumb {\r\n  background-color: #efefef;\r\n\r\n  border: 2px solid #343a40;\r\n}\r\n",".car-list {\r\n  height: 60vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n}\r\n\r\n.car-block {\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin-top: 2px;\r\n  cursor: pointer;\r\n\r\n  p {\r\n    span {\r\n      padding-left: 10px;\r\n    }\r\n  }\r\n\r\n  .color {\r\n    display: flex;\r\n    span {\r\n      display: block;\r\n      width: 20px;\r\n      height: 20px;\r\n      margin-left: 10px;\r\n      border-radius: 50%;\r\n    }\r\n  }\r\n}\r\n\r\n.car-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.car-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-track {\r\n  background: #343a40;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-thumb {\r\n  background-color: #efefef;\r\n\r\n  border: 2px solid #343a40;\r\n}\r\n\r\n.info-car-list {\r\n  max-width: 500px;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 0 20px;\r\n  padding: 0 10px 0 20px;\r\n}\r\n\r\n.control {\r\n  display: flex;\r\n  gap: 10px;\r\n  padding: 0 10px 0 10px;\r\n  @media (max-width: $between) {\r\n    flex-direction: column;\r\n  }\r\n}\r\n",".login-form {\r\n  transform: translateY(50%);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 10px;\r\n}\r\n\r\n.login-label {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 200px;\r\n  }\r\n}\r\n\r\n.buttons-login-form {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-around;\r\n  margin-top: 10px;\r\n}\r\n\r\n.info-login-form {\r\n  color: red;\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
