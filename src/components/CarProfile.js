@@ -9,6 +9,7 @@ class CarProfileView {
     this.carSvg = generateSvg(carImgSvg).querySelector("svg");
     this.container = null;
     this.partsList = null;
+    this.loader = null;
   }
 
   render(data) {
@@ -36,7 +37,12 @@ class CarProfileView {
   }
 
   createPartsListItem(data) {
-    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span></li>`;
+    return `<li class= "list-item" id=${data.id}><p><span>${
+      data.name
+    } </span><span>${data.number} </span><span>${data.brand} </span><span>${
+      data.cost
+    } руб.</span><p>
+    <p>${new Date(data.timestamp).toDateString()}</p></li>`;
   }
 
   openModalWindow() {
@@ -47,19 +53,36 @@ class CarProfileView {
     this.partsList = document.querySelector(".installed-parts-list");
     this.partsList?.remove();
     if (!document.querySelector(".note-list")) {
-      const list = `<div class="note-list" id ="note-list"></div>`;
+      const list = `<div class="note-list" id ="note-list"><span class="loader"></span></div>`;
       this.container?.insertAdjacentHTML("beforeend", list);
       NoteList.render(profileId);
     }
   }
 
-  renderParts(snapshot) {
+  async renderParts(profileId) {
     this.container = document.querySelector(".profile");
     this.partsList = document.createElement("ol");
     this.partsList.classList.add("installed-parts-list");
+
+    const div = `<div><p>Запчасти:</p><p>Дата установки:</p></div>`;
+
+    this.partsList.insertAdjacentHTML("beforeend", div);
     const noteList = document.querySelector(".note-list");
     noteList?.remove();
+
+    if (!document.querySelector(".exists")) {
+      this.loader = document.createElement("span");
+      this.loader.classList.add("exists");
+      this.container.append(this.loader);
+    }
+
     if (!document.querySelector(".installed-parts-list")) {
+      this.loader.classList.add("loader");
+      const snapshot = await Firebase.getItemsArr(
+        `${Firebase.pathUserCars}/${profileId}/parts`
+      );
+      this.loader.classList.remove("loader");
+
       snapshot.forEach((el) => {
         this.partsList.innerHTML += this.createPartsListItem(el.data());
       });
@@ -78,11 +101,7 @@ class CarProfileModel {
   }
 
   async showParts(profileId) {
-    const snapshot = await Firebase.getItemsArr(
-      `${Firebase.pathUserCars}/${profileId}/parts`
-    );
-
-    this.view.renderParts(snapshot);
+    this.view.renderParts(profileId);
   }
 
   renderNoteList(profileId) {

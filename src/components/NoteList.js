@@ -30,12 +30,14 @@ class NoteListView {
         console.error(error);
         this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
       });
-    return `<div class="note-list" id ="note-list"></div>`;
+    return `<div class="note-list" id ="note-list"><span class="loader"></span></div>`;
   }
 
   createNoteBlock(data) {
     return `<div class="note-block" id="${data.id}">
  <div class="info-note-list">
+
+ <p>${new Date(data.timestamp).toDateString()}</p>
  <p>${data.description}</p>
  <p>Стоимость: ${data.cost}</p>
  <p>Пробег: ${data.mileage}</p>

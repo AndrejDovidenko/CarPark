@@ -3,6 +3,7 @@
 @import "./carList";
 @import "./var";
 @import "./loginForm";
+@import "./loader";
 
 html {
   box-sizing: border-box;
@@ -17,6 +18,24 @@ html {
   box-sizing: inherit;
 }
 
+#overlay {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0);
+  opacity: 0;
+  z-index: -1;
+  transition: 0.5s;
+}
+
+#overlay.active {
+  display: block;
+  opacity: 0.2;
+  z-index: 10;
+}
+
 body {
   padding: 20px;
   max-width: 1200px;
@@ -24,6 +43,7 @@ body {
   font-family: "Exo 2", sans-serif;
   background-color: $bg-color;
   color: $black;
+  overflow: hidden;
   @media (max-width: $small) {
     padding: 10px;
   }
@@ -78,6 +98,7 @@ body {
   font-weight: 600;
   text-decoration: none;
   transition: 0.5s;
+  color: $black;
   @media (max-width: $small) {
     padding: 10px 10px;
   }

@@ -2,13 +2,15 @@ import Firebase from "./FirebaseAPI";
 import NoteList from "./NoteList";
 
 class NoteModView {
-  constructor() {
+  constructor(overlay) {
+    this.overlay = overlay;
     this.container = null;
     this.description = null;
     this.costWork = null;
     this.mileage = null;
     this.buttonSave = null;
     this.partsList = null;
+    this.date = null;
   }
 
   render() {
@@ -17,31 +19,31 @@ class NoteModView {
     <div class="info-block">
     <h2 class="date">${new Date().toDateString()}</h2>
     <label> Выполненые работы:
-    <textarea cols="50" rows="10" class="info-work-input description"/></textarea>
+    <textarea cols="50" rows="10" class="info-work-input description" placeholder="Описание выполненных работ..."/></textarea>
   </label>
   <label>Стоимость работ:
-  <input type="number" class="info-work-input cost-work"/>
+  <input type="number" class="info-work-input cost-work" placeholder="Введите стоимость работ"/>
   </label>
   <label>Пробег:
-  <input type="number" class="info-work-input mileage"/>
+  <input type="number" class="info-work-input mileage" placeholder="Введите текущий пробег"/>
   </label>
   </div>
   <div class="info-block info-parts">
   <label> Номер запчасти:
-    <input type="text" class="info-parts-input parts-number"/>
+    <input type="text" class="info-parts-input parts-number" placeholder="Введите номер запчасти"/>
   </label>
   <label>Название запчасти:
-    <input type="text" class="info-parts-input parts-name"/>
+    <input type="text" class="info-parts-input parts-name" placeholder="Введите название запчасти "/>
   </label>
   <label> Стоимость:
-    <input type="number" class="info-parts-input cost-parts "/>
+    <input type="number" class="info-parts-input cost-parts " placeholder="Введите стоимость запчасти"/>
   </label>
   <label> Производитель:
-    <input type="text" class="info-parts-input parts-brand"/>
+    <input type="text" class="info-parts-input parts-brand" placeholder="Введите бренд запчасти"/>
   </label> 
   <button class="btn add-parts" disabled>Добавить</button>
   </div>
-  <ol class ="parts-list"></ol>
+  <ol class ="parts-list">Запчасти:</ol>
   <button class="btn button-save-note" disabled>Сохранить</button>
     </div>`;
   }
@@ -53,6 +55,7 @@ class NoteModView {
     this.mileage = document.querySelector(".mileage");
     this.partsList = this.container.querySelector(".parts-list");
     this.buttonSave = document.querySelector(".button-save-note");
+    this.date = document.querySelector(".date");
 
     if (data) {
       const string = data.list;
@@ -69,6 +72,7 @@ class NoteModView {
         )
       );
 
+      this.date.textContent = new Date(data.timestamp).toDateString();
       this.description.value = data.description;
       this.costWork.value = data.cost;
       this.mileage.value = data.mileage;
@@ -79,6 +83,7 @@ class NoteModView {
     }
 
     this.container.classList.add("modal-window_open");
+    this.overlay.classList.add("active");
   }
 
   setDisabled(state, item) {
@@ -122,6 +127,7 @@ class NoteModView {
   closeModalWindow() {
     this.setDisabled(true, this.buttonSave);
     this.container.classList.remove("modal-window_open");
+    this.overlay.classList.remove("active");
   }
 
   cleanModalWindow() {
@@ -187,6 +193,8 @@ class NoteModModel {
       `${Firebase.pathUserCars}/${data.profileId}/notes`
     );
 
+    await Firebase.updateFieldDoc(data.profileId, { mileage: data.mileage });
+
     this.view.renderNoteBlock(data);
   }
 
@@ -197,6 +205,7 @@ class NoteModModel {
       `${Firebase.pathUserCars}/${data.profileId}/notes`
     );
 
+    await Firebase.updateFieldDoc(data.profileId, { mileage: data.mileage });
     this.view.updateNoteBlock(data);
   }
 
@@ -336,7 +345,7 @@ class NoteModController {
 
 class NoteModMain {
   constructor() {
-    this.view = new NoteModView();
+    this.view = new NoteModView(document.querySelector("#overlay"));
     this.model = new NoteModModel(this.view);
     this.controller = new NoteModController(
       this.model,

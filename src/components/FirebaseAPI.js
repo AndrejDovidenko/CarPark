@@ -71,6 +71,10 @@ class FirebaseAPI {
     await setDoc(doc(this.db, path, id), data);
   }
 
+  async updateFieldDoc(id, obj, path = this.pathUserCars) {
+    await updateDoc(doc(this.db, path, id), obj);
+  }
+
   async createAccount(email, password) {
     try {
       const userCredential = await createUserWithEmailAndPassword(

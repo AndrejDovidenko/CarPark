@@ -5,6 +5,8 @@
   overflow: auto;
   align-items: center;
   gap: 20px;
+  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
 }
 
 .car-block {
@@ -44,13 +46,13 @@
 }
 
 .car-list::-webkit-scrollbar-track {
-  background: #343a40;
+  background: $black;
 }
 
 .car-list::-webkit-scrollbar-thumb {
-  background-color: #efefef;
+  background-color: $white;
 
-  border: 2px solid #343a40;
+  border: 2px solid $black;
 }
 
 .info-car-list {
@@ -59,6 +61,10 @@
   flex-wrap: wrap;
   gap: 0 20px;
   padding: 0 10px 0 20px;
+  font-weight: 600;
+  p {
+    margin: 10px 0 10px 0;
+  }
 }
 
 .control {

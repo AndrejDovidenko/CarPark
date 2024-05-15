@@ -8,6 +8,8 @@
 .car-info {
   display: flex;
   justify-content: space-around;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .car-img {
@@ -30,6 +32,8 @@
   align-items: center;
   gap: 20px;
   margin-top: 40px;
+  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
 }
 
 .note-block {
@@ -74,8 +78,26 @@
 }
 
 .installed-parts-list {
+  height: 45vh;
+  overflow-y: auto;
   margin-top: 40px;
   font-size: 1.5rem;
+  padding: 10px 20px;
+  margin-bottom: 0;
+  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+  }
+
+  li {
+    font-size: 1.2rem;
+    display: flex;
+    justify-content: space-between;
+  }
 }
 
 .note-block:hover {
@@ -83,16 +105,20 @@
   transform: scale(1.02);
 }
 
+.exists {
+  align-self: center;
+}
+
 .note-list::-webkit-scrollbar {
   width: 10px;
 }
 
 .note-list::-webkit-scrollbar-track {
-  background: #343a40;
+  background: $black;
 }
 
 .note-list::-webkit-scrollbar-thumb {
-  background-color: #efefef;
+  background-color: $white;
 
-  border: 2px solid #343a40;
+  border: 2px solid $black;
 }

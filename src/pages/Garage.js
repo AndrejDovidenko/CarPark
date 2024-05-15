@@ -8,7 +8,7 @@ class GarageView {
   render() {
     return `
     <section class="main-page">
-      <h1>Garage</h1>
+      <h1>Мой гараж<span class="count-cars"></span></h1>
       <button class="btn add-auto">Добавить авто
       </button>
     ${CarList.render()}

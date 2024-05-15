@@ -4,7 +4,8 @@ import CarList from "./CarList";
 import Firebase from "./FirebaseAPI";
 
 class ModalWindowView {
-  constructor() {
+  constructor(overlay) {
+    this.overlay = overlay;
     this.container = null;
     this.selectBrand = null;
     this.selectModel = null;
@@ -31,10 +32,10 @@ class ModalWindowView {
     <input type="color" class="car-info-input input-color"/>
   </label>
   <label>Регистрационный номер
-    <input type="text" class="car-info-input car-plate"/>
+    <input type="text" class="car-info-input car-plate" placeholder="Введите номер авто"/>
   </label>
   <label>Пробег
-    <input type="number" class="car-info-input mileage"/>
+    <input type="number" class="car-info-input mileage" placeholder="Введите пробег авто "/>
   </label>
   <button class="btn button-save" disabled>Сохранить</button>
     </div>`;
@@ -72,6 +73,7 @@ class ModalWindowView {
     }
 
     this.container.classList.add("modal-window_open");
+    this.overlay.classList.add("active");
   }
 
   createOptions(arr, item) {
@@ -117,6 +119,7 @@ class ModalWindowView {
     this.setDisabled(true, this.selectModel);
     this.setDisabled(true, this.selectYear);
     this.container.classList.remove("modal-window_open");
+    this.overlay.classList.remove("active");
   }
 }
 
@@ -285,7 +288,7 @@ class ModalWindowController {
 
 class ModalWindowMain {
   constructor() {
-    this.view = new ModalWindowView();
+    this.view = new ModalWindowView(document.querySelector("#overlay"));
     this.model = new ModalWindowModel(this.view);
     this.controller = new ModalWindowController(
       this.model,

@@ -5,6 +5,7 @@ import Garage from "../pages/Garage";
 class CarListView {
   constructor() {
     this.container = null;
+    this.amountCars = null;
   }
 
   async renderCars() {
@@ -23,12 +24,14 @@ class CarListView {
       .then((html) => {
         this.container = document.querySelector("#car-list");
         this.container.innerHTML = html;
+        this.renderCountCars();
       })
       .catch((error) => {
         console.error(error);
         this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
       });
-    return '<div id="car-list" class="car-list">Loading cars...</div>';
+
+    return '<div id="car-list" class="car-list"><span class="loader"></span></div>';
   }
 
   createCarBlock(data) {
@@ -48,9 +51,16 @@ class CarListView {
   </div>`;
   }
 
+  renderCountCars() {
+    this.amountCars = this.container.querySelectorAll(".car-block").length;
+    const item = document.querySelector(".count-cars");
+    item.textContent = ` (${this.amountCars})`;
+  }
+
   renderCarBlock(data) {
     const block = this.createCarBlock(data);
     this.container.insertAdjacentHTML("beforeend", block);
+    this.renderCountCars();
   }
 
   updateCarBlock(data) {
@@ -94,6 +104,10 @@ class CarListModel {
 
     this.view.openCarProfile(data);
   }
+
+  renderCountCars() {
+    this.view.renderCountCars();
+  }
 }
 
 class CarListController {
@@ -120,6 +134,7 @@ class CarListController {
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);
+          this.model.renderCountCars();
 
           break;
         case buttonEdit:
