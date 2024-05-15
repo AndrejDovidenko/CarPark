@@ -20476,6 +20476,7 @@ __webpack_require__.r(__webpack_exports__);
 class CarListView {
   constructor() {
     this.container = null;
+    this.amountCars = null;
   }
   async renderCars() {
     const arr = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItemsArr(_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars);
@@ -20489,11 +20490,12 @@ class CarListView {
     this.renderCars().then(html => {
       this.container = document.querySelector("#car-list");
       this.container.innerHTML = html;
+      this.renderCountCars();
     }).catch(error => {
       console.error(error);
       this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
     });
-    return '<div id="car-list" class="car-list">Loading cars...</div>';
+    return '<div id="car-list" class="car-list"><span class="loader"></span></div>';
   }
   createCarBlock(data) {
     return `<div class="car-block" id="${data.id}">
@@ -20511,9 +20513,15 @@ class CarListView {
     </div>
   </div>`;
   }
+  renderCountCars() {
+    this.amountCars = this.container.querySelectorAll(".car-block").length;
+    const item = document.querySelector(".count-cars");
+    item.textContent = ` (${this.amountCars})`;
+  }
   renderCarBlock(data) {
     const block = this.createCarBlock(data);
     this.container.insertAdjacentHTML("beforeend", block);
+    this.renderCountCars();
   }
   updateCarBlock(data) {
     const block = this.container.querySelector(`#${data.id}`);
@@ -20546,6 +20554,9 @@ class CarListModel {
     const data = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].getItem(_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars, id);
     this.view.openCarProfile(data);
   }
+  renderCountCars() {
+    this.view.renderCountCars();
+  }
 }
 class CarListController {
   constructor(model, root) {
@@ -20568,6 +20579,7 @@ class CarListController {
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);
+          this.model.renderCountCars();
           break;
         case buttonEdit:
           this.model.openModalWindow(clickBlock.id);
@@ -20630,6 +20642,7 @@ class CarProfileView {
     this.carSvg = (0,_constants_generateSVG__WEBPACK_IMPORTED_MODULE_1__.generateSvg)(_img_car_svg__WEBPACK_IMPORTED_MODULE_0__).querySelector("svg");
     this.container = null;
     this.partsList = null;
+    this.loader = null;
   }
   render(data) {
     this.carSvg.style.fill = data.color;
@@ -20654,7 +20667,8 @@ class CarProfileView {
     </section>`;
   }
   createPartsListItem(data) {
-    return `<li class= "list-item" id=${data.id}><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span></li>`;
+    return `<li class= "list-item" id=${data.id}><p><span>${data.name} </span><span>${data.number} </span><span>${data.brand} </span><span>${data.cost} руб.</span><p>
+    <p>${new Date(data.timestamp).toDateString()}</p></li>`;
   }
   openModalWindow() {
     _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__["default"].view.showModalWindow();
@@ -20663,18 +20677,28 @@ class CarProfileView {
     this.partsList = document.querySelector(".installed-parts-list");
     this.partsList?.remove();
     if (!document.querySelector(".note-list")) {
-      const list = `<div class="note-list" id ="note-list"></div>`;
+      const list = `<div class="note-list" id ="note-list"><span class="loader"></span></div>`;
       this.container?.insertAdjacentHTML("beforeend", list);
       _NoteList__WEBPACK_IMPORTED_MODULE_4__["default"].render(profileId);
     }
   }
-  renderParts(snapshot) {
+  async renderParts(profileId) {
     this.container = document.querySelector(".profile");
     this.partsList = document.createElement("ol");
     this.partsList.classList.add("installed-parts-list");
+    const div = `<div><p>Запчасти:</p><p>Дата установки:</p></div>`;
+    this.partsList.insertAdjacentHTML("beforeend", div);
     const noteList = document.querySelector(".note-list");
     noteList?.remove();
+    if (!document.querySelector(".exists")) {
+      this.loader = document.createElement("span");
+      this.loader.classList.add("exists");
+      this.container.append(this.loader);
+    }
     if (!document.querySelector(".installed-parts-list")) {
+      this.loader.classList.add("loader");
+      const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].pathUserCars}/${profileId}/parts`);
+      this.loader.classList.remove("loader");
       snapshot.forEach(el => {
         this.partsList.innerHTML += this.createPartsListItem(el.data());
       });
@@ -20690,8 +20714,7 @@ class CarProfileModel {
     this.view.openModalWindow();
   }
   async showParts(profileId) {
-    const snapshot = await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].getItemsArr(`${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__["default"].pathUserCars}/${profileId}/parts`);
-    this.view.renderParts(snapshot);
+    this.view.renderParts(profileId);
   }
   renderNoteList(profileId) {
     this.view.renderNoteList(profileId);
@@ -20822,6 +20845,9 @@ class FirebaseAPI {
   async createDocUser(path, id, data = {}) {
     await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.setDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id), data);
   }
+  async updateFieldDoc(id, obj, path = this.pathUserCars) {
+    await (0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.updateDoc)((0,firebase_firestore_lite__WEBPACK_IMPORTED_MODULE_1__.doc)(this.db, path, id), obj);
+  }
   async createAccount(email, password) {
     try {
       const userCredential = await (0,firebase_auth__WEBPACK_IMPORTED_MODULE_2__.createUserWithEmailAndPassword)(this.myAuth, email, password);
@@ -20901,8 +20927,8 @@ class LoginView {
     <div class="login-form">
     <h1>Приветствую!</h1>
     <p>Залогинтесь пожалуйста</p>
-      <label class="login-label">Email:<input type="email" class="email" /></label>
-      <label class="login-label">Password:<input type="password" class="password" /></label>
+      <label class="login-label">Email:<input type="email" placeholder="&#9993 Email" class="email" /></label>
+      <label class="login-label">Password:<input type="password" placeholder="&#9998 Password" class="password" /></label>
       <div class="buttons-login-form">
         <button class="btn button-sign-in">Войти</button>
         <button class="btn button-sign-up">Создать аккаунт</button>
@@ -20989,7 +21015,8 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class ModalWindowView {
-  constructor() {
+  constructor(overlay) {
+    this.overlay = overlay;
     this.container = null;
     this.selectBrand = null;
     this.selectModel = null;
@@ -21015,10 +21042,10 @@ class ModalWindowView {
     <input type="color" class="car-info-input input-color"/>
   </label>
   <label>Регистрационный номер
-    <input type="text" class="car-info-input car-plate"/>
+    <input type="text" class="car-info-input car-plate" placeholder="Введите номер авто"/>
   </label>
   <label>Пробег
-    <input type="number" class="car-info-input mileage"/>
+    <input type="number" class="car-info-input mileage" placeholder="Введите пробег авто "/>
   </label>
   <button class="btn button-save" disabled>Сохранить</button>
     </div>`;
@@ -21051,6 +21078,7 @@ class ModalWindowView {
       this.buttonSave.setAttribute("data-id", data.id);
     }
     this.container.classList.add("modal-window_open");
+    this.overlay.classList.add("active");
   }
   createOptions(arr, item) {
     arr.forEach(el => {
@@ -21088,6 +21116,7 @@ class ModalWindowView {
     this.setDisabled(true, this.selectModel);
     this.setDisabled(true, this.selectYear);
     this.container.classList.remove("modal-window_open");
+    this.overlay.classList.remove("active");
   }
 }
 class ModalWindowModel {
@@ -21222,7 +21251,7 @@ class ModalWindowController {
 }
 class ModalWindowMain {
   constructor() {
-    this.view = new ModalWindowView();
+    this.view = new ModalWindowView(document.querySelector("#overlay"));
     this.model = new ModalWindowModel(this.view);
     this.controller = new ModalWindowController(this.model, document.querySelector("#root"));
   }
@@ -21250,13 +21279,15 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class NoteModView {
-  constructor() {
+  constructor(overlay) {
+    this.overlay = overlay;
     this.container = null;
     this.description = null;
     this.costWork = null;
     this.mileage = null;
     this.buttonSave = null;
     this.partsList = null;
+    this.date = null;
   }
   render() {
     return ` <div class="modal-window note-mod">
@@ -21264,31 +21295,31 @@ class NoteModView {
     <div class="info-block">
     <h2 class="date">${new Date().toDateString()}</h2>
     <label> Выполненые работы:
-    <textarea cols="50" rows="10" class="info-work-input description"/></textarea>
+    <textarea cols="50" rows="10" class="info-work-input description" placeholder="Описание выполненных работ..."/></textarea>
   </label>
   <label>Стоимость работ:
-  <input type="number" class="info-work-input cost-work"/>
+  <input type="number" class="info-work-input cost-work" placeholder="Введите стоимость работ"/>
   </label>
   <label>Пробег:
-  <input type="number" class="info-work-input mileage"/>
+  <input type="number" class="info-work-input mileage" placeholder="Введите текущий пробег"/>
   </label>
   </div>
   <div class="info-block info-parts">
   <label> Номер запчасти:
-    <input type="text" class="info-parts-input parts-number"/>
+    <input type="text" class="info-parts-input parts-number" placeholder="Введите номер запчасти"/>
   </label>
   <label>Название запчасти:
-    <input type="text" class="info-parts-input parts-name"/>
+    <input type="text" class="info-parts-input parts-name" placeholder="Введите название запчасти "/>
   </label>
   <label> Стоимость:
-    <input type="number" class="info-parts-input cost-parts "/>
+    <input type="number" class="info-parts-input cost-parts " placeholder="Введите стоимость запчасти"/>
   </label>
   <label> Производитель:
-    <input type="text" class="info-parts-input parts-brand"/>
+    <input type="text" class="info-parts-input parts-brand" placeholder="Введите бренд запчасти"/>
   </label> 
   <button class="btn add-parts" disabled>Добавить</button>
   </div>
-  <ol class ="parts-list"></ol>
+  <ol class ="parts-list">Запчасти:</ol>
   <button class="btn button-save-note" disabled>Сохранить</button>
     </div>`;
   }
@@ -21299,11 +21330,13 @@ class NoteModView {
     this.mileage = document.querySelector(".mileage");
     this.partsList = this.container.querySelector(".parts-list");
     this.buttonSave = document.querySelector(".button-save-note");
+    this.date = document.querySelector(".date");
     if (data) {
       const string = data.list;
       const newPartsList = new DOMParser().parseFromString(string, "text/html").querySelector(".parts-list");
       const arr = newPartsList.querySelectorAll("li");
       arr.forEach(el => el.insertAdjacentHTML("beforeend", `<button class="btn button-remove">Удалить</button>`));
+      this.date.textContent = new Date(data.timestamp).toDateString();
       this.description.value = data.description;
       this.costWork.value = data.cost;
       this.mileage.value = data.mileage;
@@ -21312,6 +21345,7 @@ class NoteModView {
       this.partsList.replaceWith(newPartsList);
     }
     this.container.classList.add("modal-window_open");
+    this.overlay.classList.add("active");
   }
   setDisabled(state, item) {
     item.disabled = state;
@@ -21345,6 +21379,7 @@ class NoteModView {
   closeModalWindow() {
     this.setDisabled(true, this.buttonSave);
     this.container.classList.remove("modal-window_open");
+    this.overlay.classList.remove("active");
   }
   cleanModalWindow() {
     const arr = this.container.querySelectorAll(".info-work-input");
@@ -21389,10 +21424,16 @@ class NoteModModel {
       data.id = "note" + index;
     }
     await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/notes`);
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].updateFieldDoc(data.profileId, {
+      mileage: data.mileage
+    });
     this.view.renderNoteBlock(data);
   }
   async updateNote(data) {
     await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].createItem(data.id, data, `${_FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].pathUserCars}/${data.profileId}/notes`);
+    await _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__["default"].updateFieldDoc(data.profileId, {
+      mileage: data.mileage
+    });
     this.view.updateNoteBlock(data);
   }
   closeModalWindow() {
@@ -21500,7 +21541,7 @@ class NoteModController {
 }
 class NoteModMain {
   constructor() {
-    this.view = new NoteModView();
+    this.view = new NoteModView(document.querySelector("#overlay"));
     this.model = new NoteModModel(this.view);
     this.controller = new NoteModController(this.model, document.querySelector("#root"));
   }
@@ -21575,11 +21616,13 @@ class NoteListView {
       console.error(error);
       this.container.innerHTML = "<p>Ошибка при загрузке данных</p>";
     });
-    return `<div class="note-list" id ="note-list"></div>`;
+    return `<div class="note-list" id ="note-list"><span class="loader"></span></div>`;
   }
   createNoteBlock(data) {
     return `<div class="note-block" id="${data.id}">
  <div class="info-note-list">
+
+ <p>${new Date(data.timestamp).toDateString()}</p>
  <p>${data.description}</p>
  <p>Стоимость: ${data.cost}</p>
  <p>Пробег: ${data.mileage}</p>
@@ -21883,7 +21926,7 @@ class GarageView {
   render() {
     return `
     <section class="main-page">
-      <h1>Garage</h1>
+      <h1>Мой гараж<span class="count-cars"></span></h1>
       <button class="btn add-auto">Добавить авто
       </button>
     ${_components_CarList__WEBPACK_IMPORTED_MODULE_1__["default"].render()}
@@ -22316,16 +22359,37 @@ __webpack_require__.r(__webpack_exports__);
 
 var ___CSS_LOADER_EXPORT___ = _node_modules_css_loader_dist_runtime_api_js__WEBPACK_IMPORTED_MODULE_1___default()((_node_modules_css_loader_dist_runtime_sourceMaps_js__WEBPACK_IMPORTED_MODULE_0___default()));
 // Module
-___CSS_LOADER_EXPORT___.push([module.id, `.modal-window {
-  display: none;
+___CSS_LOADER_EXPORT___.push([module.id, `@charset "UTF-8";
+.modal-window {
+  position: absolute;
+  display: flex;
   flex-direction: column;
-  width: 80vw;
+  max-width: 1000px;
+  width: 70vw;
   height: auto;
+  top: 50%;
+  left: 50%;
+  transform: translate(100%, -50%);
   border: none;
   border-radius: 10px;
   gap: 1rem;
   padding: 2rem;
+  opacity: 0.5;
   background-color: #def2f1;
+  transition: 0.5s;
+}
+@media (max-width: 600px) {
+  .modal-window {
+    width: 85vw;
+  }
+}
+.modal-window ol {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+.modal-window ol li {
+  font-size: 1rem;
+  margin-top: 5px;
 }
 
 .close {
@@ -22336,28 +22400,57 @@ ___CSS_LOADER_EXPORT___.push([module.id, `.modal-window {
 }
 
 .modal-window_open {
-  position: absolute;
-  display: flex;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  opacity: 1;
+  z-index: 15;
 }
 
 label {
   display: flex;
   justify-content: space-between;
+  font-size: 1.2rem;
+  font-weight: 700;
 }
+label select,
 label input {
   width: 30%;
   height: 2rem;
   border-radius: 10px;
   border: none;
+  padding: 0 10px 0 10px;
+  font-size: 1rem;
+  font-weight: normal;
 }
-label select {
-  width: 30%;
-  height: 2rem;
+label textarea {
   border-radius: 10px;
   border: none;
+  padding: 10px;
+  font-size: 1rem;
+  font-weight: normal;
+}
+label select:hover,
+label input:hover,
+label textarea:hover {
+  border: 1px solid #17252a;
+}
+label select:focus,
+label input:focus,
+label textarea:focus {
+  outline: none;
+  border: 2px solid #2b7a78;
+}
+label select:invalid,
+label input:invalid,
+label textarea:invalid {
+  outline: none;
+  border: 2px solid red;
+}
+
+input[type=color] {
+  background-color: #fff;
+  padding: 0 2px 0 2px;
 }
 
 .info-block {
@@ -22370,6 +22463,11 @@ label select {
   padding-top: 20px;
 }
 
+.button-save,
+.button-save-note {
+  align-self: center;
+}
+
 .profile {
   display: flex;
   flex-direction: column;
@@ -22378,6 +22476,8 @@ label select {
 .car-info {
   display: flex;
   justify-content: space-around;
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .car-img svg {
@@ -22398,6 +22498,8 @@ label select {
   align-items: center;
   gap: 20px;
   margin-top: 40px;
+  scrollbar-color: #17252a #fff; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
 }
 
 .note-block {
@@ -22446,8 +22548,24 @@ label select {
 }
 
 .installed-parts-list {
+  height: 45vh;
+  overflow-y: auto;
   margin-top: 40px;
   font-size: 1.5rem;
+  padding: 10px 20px;
+  margin-bottom: 0;
+  scrollbar-color: #17252a #fff; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
+}
+.installed-parts-list div {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+}
+.installed-parts-list li {
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: space-between;
 }
 
 .note-block:hover {
@@ -22455,17 +22573,21 @@ label select {
   transform: scale(1.02);
 }
 
+.exists {
+  align-self: center;
+}
+
 .note-list::-webkit-scrollbar {
   width: 10px;
 }
 
 .note-list::-webkit-scrollbar-track {
-  background: #343a40;
+  background: #17252a;
 }
 
 .note-list::-webkit-scrollbar-thumb {
-  background-color: #efefef;
-  border: 2px solid #343a40;
+  background-color: #fff;
+  border: 2px solid #17252a;
 }
 
 .car-list {
@@ -22475,6 +22597,8 @@ label select {
   overflow: auto;
   align-items: center;
   gap: 20px;
+  scrollbar-color: #17252a #fff; /* «цвет ползунка» «цвет полосы скроллбара» */
+  scrollbar-width: thin; /* толщина */
 }
 
 .car-block {
@@ -22510,12 +22634,12 @@ label select {
 }
 
 .car-list::-webkit-scrollbar-track {
-  background: #343a40;
+  background: #17252a;
 }
 
 .car-list::-webkit-scrollbar-thumb {
-  background-color: #efefef;
-  border: 2px solid #343a40;
+  background-color: #fff;
+  border: 2px solid #17252a;
 }
 
 .info-car-list {
@@ -22524,6 +22648,10 @@ label select {
   flex-wrap: wrap;
   gap: 0 20px;
   padding: 0 10px 0 20px;
+  font-weight: 600;
+}
+.info-car-list p {
+  margin: 10px 0 10px 0;
 }
 
 .control {
@@ -22549,6 +22677,7 @@ label select {
   width: 300px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
 }
 .login-label input {
   width: 200px;
@@ -22565,6 +22694,78 @@ label select {
   color: red;
 }
 
+.loader {
+  transform: rotateZ(45deg);
+  perspective: 1000px;
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  color: #fff;
+  margin-top: 15vh;
+}
+
+.loader:before,
+.loader:after {
+  content: "";
+  display: block;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: inherit;
+  height: inherit;
+  border-radius: 50%;
+  transform: rotateX(70deg);
+  animation: 1s spin linear infinite;
+}
+
+.loader:after {
+  color: #ff3d00;
+  transform: rotateY(70deg);
+  animation-delay: 0.4s;
+}
+
+@keyframes rotate {
+  0% {
+    transform: translate(-50%, -50%) rotateZ(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotateZ(360deg);
+  }
+}
+@keyframes rotateccw {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  100% {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+@keyframes spin {
+  0%, 100% {
+    box-shadow: 0.2em 0px 0 0px currentcolor;
+  }
+  12% {
+    box-shadow: 0.2em 0.2em 0 0 currentcolor;
+  }
+  25% {
+    box-shadow: 0 0.2em 0 0px currentcolor;
+  }
+  37% {
+    box-shadow: -0.2em 0.2em 0 0 currentcolor;
+  }
+  50% {
+    box-shadow: -0.2em 0 0 0 currentcolor;
+  }
+  62% {
+    box-shadow: -0.2em -0.2em 0 0 currentcolor;
+  }
+  75% {
+    box-shadow: 0px -0.2em 0 0 currentcolor;
+  }
+  87% {
+    box-shadow: 0.2em -0.2em 0 0 currentcolor;
+  }
+}
 html {
   box-sizing: border-box;
 }
@@ -22580,6 +22781,24 @@ html {
   box-sizing: inherit;
 }
 
+#overlay {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  top: 0;
+  left: 0;
+  background-color: rgb(0, 0, 0);
+  opacity: 0;
+  z-index: -1;
+  transition: 0.5s;
+}
+
+#overlay.active {
+  display: block;
+  opacity: 0.2;
+  z-index: 10;
+}
+
 body {
   padding: 20px;
   max-width: 1200px;
@@ -22587,6 +22806,7 @@ body {
   font-family: "Exo 2", sans-serif;
   background-color: aliceblue;
   color: #17252a;
+  overflow: hidden;
 }
 @media (max-width: 470px) {
   body {
@@ -22643,6 +22863,7 @@ body {
   font-weight: 600;
   text-decoration: none;
   transition: 0.5s;
+  color: #17252a;
 }
 @media (max-width: 470px) {
   .main-menu__link {
@@ -22668,7 +22889,7 @@ body {
 
 .add-auto {
   margin-bottom: 40px;
-}`, "",{"version":3,"sources":["webpack://./src/scss/_modalWindow.scss","webpack://./src/scss/_var.scss","webpack://./src/scss/style.scss","webpack://./src/scss/_carProfile.scss","webpack://./src/scss/_carList.scss","webpack://./src/scss/_loginForm.scss"],"names":[],"mappings":"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","sourcesContent":["@import \"./var\";\r\n\r\n.modal-window {\r\n  display: none;\r\n  flex-direction: column;\r\n  width: 80vw;\r\n  height: auto;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  gap: 1rem;\r\n  padding: 2rem;\r\n  background-color: $bg-color-modal;\r\n}\r\n\r\n.close {\r\n  position: absolute;\r\n  right: 10px;\r\n  top: 10px;\r\n  cursor: pointer;\r\n}\r\n\r\n.modal-window_open {\r\n  position: absolute;\r\n  display: flex;\r\n\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n  }\r\n  select {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n  }\r\n}\r\n\r\n.info-block {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n}\r\n\r\n.info-parts {\r\n  padding-top: 20px;\r\n}\r\n","$bg-color: aliceblue;\r\n$bg-color-modal: #def2f1;\r\n$white: #fff;\r\n$col: #444444;\r\n$base-border-radius: 10px;\r\n$green: #2b7a78;\r\n$black: #17252a;\r\n$color-disabled: #2b7a7860;\r\n\r\n$tablet: 1100px;\r\n$between: 800px;\r\n$mobile: 600px;\r\n$small: 470px;\r\n","@import \"./modalWindow\";\r\n@import \"./carProfile\";\r\n@import \"./carList\";\r\n@import \"./var\";\r\n@import \"./loginForm\";\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n  @media (max-width: $small) {\r\n    font-size: 12px;\r\n  }\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  max-width: 1200px;\r\n  margin: auto;\r\n  font-family: \"Exo 2\", sans-serif;\r\n  background-color: $bg-color;\r\n  color: $black;\r\n  @media (max-width: $small) {\r\n    padding: 10px;\r\n  }\r\n}\r\n\r\n.btn {\r\n  width: fit-content;\r\n  height: 30px;\r\n  background-color: $green;\r\n  color: white;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  padding: 0 15px 0 15px;\r\n  transition: 0.5s;\r\n  cursor: pointer;\r\n}\r\n\r\n.btn:hover {\r\n  background-color: $black;\r\n}\r\n\r\n.btn:disabled {\r\n  background-color: $color-disabled;\r\n  cursor: default;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  display: flex;\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n  transition: 0.5s;\r\n  @media (max-width: $small) {\r\n    padding: 10px 10px;\r\n  }\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: $black;\r\n  color: $white;\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: $green;\r\n  color: $white;\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n.add-auto {\r\n  margin-bottom: 40px;\r\n}\r\n","@import \"./var\";\r\n\r\n.profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  height: 40vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  margin-top: 40px;\r\n}\r\n\r\n.note-block {\r\n  height: 100px;\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin: 1px 0 1px 0;\r\n  cursor: pointer;\r\n  p {\r\n    margin: 5px 0 5px 0;\r\n  }\r\n}\r\n\r\n.note-block.open-text {\r\n  height: auto;\r\n}\r\n\r\n.info-note-list {\r\n  height: 85%;\r\n  overflow-y: hidden;\r\n  width: 700px;\r\n  padding: 0px 10px 20px 20px;\r\n\r\n  @media (max-width: $tablet) {\r\n    width: 500px;\r\n  }\r\n\r\n  @media (max-width: $between) {\r\n    width: 400px;\r\n  }\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 280px;\r\n  }\r\n\r\n  @media (max-width: $small) {\r\n    width: auto;\r\n  }\r\n}\r\n\r\n.installed-parts-list {\r\n  margin-top: 40px;\r\n  font-size: 1.5rem;\r\n}\r\n\r\n.note-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.note-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-track {\r\n  background: #343a40;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-thumb {\r\n  background-color: #efefef;\r\n\r\n  border: 2px solid #343a40;\r\n}\r\n",".car-list {\r\n  height: 60vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n}\r\n\r\n.car-block {\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin-top: 2px;\r\n  cursor: pointer;\r\n\r\n  p {\r\n    span {\r\n      padding-left: 10px;\r\n    }\r\n  }\r\n\r\n  .color {\r\n    display: flex;\r\n    span {\r\n      display: block;\r\n      width: 20px;\r\n      height: 20px;\r\n      margin-left: 10px;\r\n      border-radius: 50%;\r\n    }\r\n  }\r\n}\r\n\r\n.car-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.car-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-track {\r\n  background: #343a40;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-thumb {\r\n  background-color: #efefef;\r\n\r\n  border: 2px solid #343a40;\r\n}\r\n\r\n.info-car-list {\r\n  max-width: 500px;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 0 20px;\r\n  padding: 0 10px 0 20px;\r\n}\r\n\r\n.control {\r\n  display: flex;\r\n  gap: 10px;\r\n  padding: 0 10px 0 10px;\r\n  @media (max-width: $between) {\r\n    flex-direction: column;\r\n  }\r\n}\r\n",".login-form {\r\n  transform: translateY(50%);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 10px;\r\n}\r\n\r\n.login-label {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-between;\r\n  input {\r\n    width: 200px;\r\n  }\r\n}\r\n\r\n.buttons-login-form {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-around;\r\n  margin-top: 10px;\r\n}\r\n\r\n.info-login-form {\r\n  color: red;\r\n}\r\n"],"sourceRoot":""}]);
+}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss","webpack://./src/scss/_modalWindow.scss","webpack://./src/scss/_var.scss","webpack://./src/scss/_carProfile.scss","webpack://./src/scss/_carList.scss","webpack://./src/scss/_loginForm.scss","webpack://./src/scss/_loader.scss"],"names":[],"mappings":"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","sourcesContent":["@import \"./modalWindow\";\r\n@import \"./carProfile\";\r\n@import \"./carList\";\r\n@import \"./var\";\r\n@import \"./loginForm\";\r\n@import \"./loader\";\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n  @media (max-width: $small) {\r\n    font-size: 12px;\r\n  }\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\n#overlay {\r\n  position: fixed;\r\n  width: 100vw;\r\n  height: 100vh;\r\n  top: 0;\r\n  left: 0;\r\n  background-color: rgba(0, 0, 0);\r\n  opacity: 0;\r\n  z-index: -1;\r\n  transition: 0.5s;\r\n}\r\n\r\n#overlay.active {\r\n  display: block;\r\n  opacity: 0.2;\r\n  z-index: 10;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  max-width: 1200px;\r\n  margin: auto;\r\n  font-family: \"Exo 2\", sans-serif;\r\n  background-color: $bg-color;\r\n  color: $black;\r\n  overflow: hidden;\r\n  @media (max-width: $small) {\r\n    padding: 10px;\r\n  }\r\n}\r\n\r\n.btn {\r\n  width: fit-content;\r\n  height: 30px;\r\n  background-color: $green;\r\n  color: white;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  padding: 0 15px 0 15px;\r\n  transition: 0.5s;\r\n  cursor: pointer;\r\n}\r\n\r\n.btn:hover {\r\n  background-color: $black;\r\n}\r\n\r\n.btn:disabled {\r\n  background-color: $color-disabled;\r\n  cursor: default;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  display: flex;\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n  transition: 0.5s;\r\n  color: $black;\r\n  @media (max-width: $small) {\r\n    padding: 10px 10px;\r\n  }\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: $black;\r\n  color: $white;\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: $green;\r\n  color: $white;\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n.add-auto {\r\n  margin-bottom: 40px;\r\n}\r\n","@import \"./var\";\r\n\r\n.modal-window {\r\n  position: absolute;\r\n  display: flex;\r\n  flex-direction: column;\r\n  max-width: 1000px;\r\n  width: 70vw;\r\n  height: auto;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(100%, -50%);\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  gap: 1rem;\r\n  padding: 2rem;\r\n  opacity: 0.5;\r\n  background-color: $bg-color-modal;\r\n  transition: 0.5s;\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 85vw;\r\n  }\r\n\r\n  ol {\r\n    font-size: 1.2rem;\r\n    font-weight: 700;\r\n    li {\r\n      font-size: 1rem;\r\n      margin-top: 5px;\r\n    }\r\n  }\r\n}\r\n\r\n.close {\r\n  position: absolute;\r\n  right: 10px;\r\n  top: 10px;\r\n  cursor: pointer;\r\n}\r\n\r\n.modal-window_open {\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  opacity: 1;\r\n  z-index: 15;\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  font-size: 1.2rem;\r\n  font-weight: 700;\r\n  select,\r\n  input {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 0 10px 0 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  textarea {\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  select:hover,\r\n  input:hover,\r\n  textarea:hover {\r\n    border: 1px solid $black;\r\n  }\r\n\r\n  select:focus,\r\n  input:focus,\r\n  textarea:focus {\r\n    outline: none;\r\n    border: 2px solid $green;\r\n  }\r\n\r\n  select:invalid,\r\n  input:invalid,\r\n  textarea:invalid {\r\n    outline: none;\r\n    border: 2px solid red;\r\n  }\r\n}\r\n\r\ninput[type=\"color\"] {\r\n  background-color: $white;\r\n  padding: 0 2px 0 2px;\r\n}\r\n\r\n.info-block {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n}\r\n\r\n.info-parts {\r\n  padding-top: 20px;\r\n}\r\n\r\n.button-save,\r\n.button-save-note {\r\n  align-self: center;\r\n}\r\n","$bg-color: aliceblue;\r\n$bg-color-modal: #def2f1;\r\n$white: #fff;\r\n$col: #444444;\r\n$base-border-radius: 10px;\r\n$green: #2b7a78;\r\n$black: #17252a;\r\n$color-disabled: #2b7a7860;\r\n\r\n$tablet: 1100px;\r\n$between: 800px;\r\n$mobile: 600px;\r\n$small: 470px;\r\n","@import \"./var\";\r\n\r\n.profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n  font-size: 1rem;\r\n  font-weight: 700;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  height: 40vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  margin-top: 40px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.note-block {\r\n  height: 100px;\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin: 1px 0 1px 0;\r\n  cursor: pointer;\r\n  p {\r\n    margin: 5px 0 5px 0;\r\n  }\r\n}\r\n\r\n.note-block.open-text {\r\n  height: auto;\r\n}\r\n\r\n.info-note-list {\r\n  height: 85%;\r\n  overflow-y: hidden;\r\n  width: 700px;\r\n  padding: 0px 10px 20px 20px;\r\n\r\n  @media (max-width: $tablet) {\r\n    width: 500px;\r\n  }\r\n\r\n  @media (max-width: $between) {\r\n    width: 400px;\r\n  }\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 280px;\r\n  }\r\n\r\n  @media (max-width: $small) {\r\n    width: auto;\r\n  }\r\n}\r\n\r\n.installed-parts-list {\r\n  height: 45vh;\r\n  overflow-y: auto;\r\n  margin-top: 40px;\r\n  font-size: 1.5rem;\r\n  padding: 10px 20px;\r\n  margin-bottom: 0;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n\r\n  div {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    font-weight: 700;\r\n  }\r\n\r\n  li {\r\n    font-size: 1.2rem;\r\n    display: flex;\r\n    justify-content: space-between;\r\n  }\r\n}\r\n\r\n.note-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.exists {\r\n  align-self: center;\r\n}\r\n\r\n.note-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n",".car-list {\r\n  height: 60vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.car-block {\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin-top: 2px;\r\n  cursor: pointer;\r\n\r\n  p {\r\n    span {\r\n      padding-left: 10px;\r\n    }\r\n  }\r\n\r\n  .color {\r\n    display: flex;\r\n    span {\r\n      display: block;\r\n      width: 20px;\r\n      height: 20px;\r\n      margin-left: 10px;\r\n      border-radius: 50%;\r\n    }\r\n  }\r\n}\r\n\r\n.car-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.car-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n\r\n.info-car-list {\r\n  max-width: 500px;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 0 20px;\r\n  padding: 0 10px 0 20px;\r\n  font-weight: 600;\r\n  p {\r\n    margin: 10px 0 10px 0;\r\n  }\r\n}\r\n\r\n.control {\r\n  display: flex;\r\n  gap: 10px;\r\n  padding: 0 10px 0 10px;\r\n  @media (max-width: $between) {\r\n    flex-direction: column;\r\n  }\r\n}\r\n",".login-form {\r\n  transform: translateY(50%);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 10px;\r\n}\r\n\r\n.login-label {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  input {\r\n    width: 200px;\r\n  }\r\n}\r\n\r\n.buttons-login-form {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-around;\r\n  margin-top: 10px;\r\n}\r\n\r\n.info-login-form {\r\n  color: red;\r\n}\r\n",".loader {\r\n  transform: rotateZ(45deg);\r\n  perspective: 1000px;\r\n  border-radius: 50%;\r\n  width: 70px;\r\n  height: 70px;\r\n  color: #fff;\r\n  margin-top: 15vh;\r\n}\r\n.loader:before,\r\n.loader:after {\r\n  content: \"\";\r\n  display: block;\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: inherit;\r\n  height: inherit;\r\n  border-radius: 50%;\r\n  transform: rotateX(70deg);\r\n  animation: 1s spin linear infinite;\r\n}\r\n.loader:after {\r\n  color: #ff3d00;\r\n  transform: rotateY(70deg);\r\n  animation-delay: 0.4s;\r\n}\r\n\r\n@keyframes rotate {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotateZ(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotateZ(360deg);\r\n  }\r\n}\r\n\r\n@keyframes rotateccw {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotate(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotate(-360deg);\r\n  }\r\n}\r\n\r\n@keyframes spin {\r\n  0%,\r\n  100% {\r\n    box-shadow: 0.2em 0px 0 0px currentcolor;\r\n  }\r\n  12% {\r\n    box-shadow: 0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  25% {\r\n    box-shadow: 0 0.2em 0 0px currentcolor;\r\n  }\r\n  37% {\r\n    box-shadow: -0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  50% {\r\n    box-shadow: -0.2em 0 0 0 currentcolor;\r\n  }\r\n  62% {\r\n    box-shadow: -0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n  75% {\r\n    box-shadow: 0px -0.2em 0 0 currentcolor;\r\n  }\r\n  87% {\r\n    box-shadow: 0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
