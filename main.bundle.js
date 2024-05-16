@@ -20613,20 +20613,6 @@ class CarListMain {
 const CarList = new CarListMain();
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (CarList);
 
-// async a() {
-//   const snapshot = await Firebase.getItemsArr(Firebase.pathUserCars);
-//   let arr = [];
-//   snapshot.forEach((el) => arr.push(el.data().id));
-
-//   for (let i = 0; arr.length > i; i++) {
-//     const snap = await Firebase.getItemsArr(
-//       `${Firebase.pathUserCars}/${arr[i]}/parts`
-//     );
-
-//     console.log(snap.docs);
-//   }
-// }
-
 /***/ }),
 
 /***/ "./src/components/CarProfile.js":
@@ -21632,7 +21618,7 @@ const NavBar = {
           <li><a class="main-menu__link" href="#statistics">Статистика</a></li>
           <li><a class="main-menu__link" href="#about">О нас</a></li>
         </ul>
-        <div>
+        <div class= control-header>
         <div class ="sound"></div>
         <button class="btn exit">Выход</button>
         </div>
@@ -21927,17 +21913,11 @@ class MainController {
   }
   addListeners() {
     window.addEventListener("hashchange", () => this.updateState());
-    this.mainContainer.querySelector(".main-menu__list").addEventListener("click", event => {
-      event.preventDefault();
-      if (!document.querySelector(".soundOff")) {
-        _constants_constants_js__WEBPACK_IMPORTED_MODULE_9__.open.play();
-      }
-      window.location.hash = event.target.getAttribute("href");
-      this.updateState();
-    });
-    this.mainContainer.addEventListener("click", event => {
+    const control = this.mainContainer.querySelector(".control-header");
+    control.addEventListener("click", event => {
       const exit = event.target.closest(".exit");
       const soundIcon = event.target.closest(".sound");
+      console.log(soundIcon);
       if (exit) {
         _components_FirebaseAPI_js__WEBPACK_IMPORTED_MODULE_2__["default"].logOut();
         if (!document.querySelector(".soundOff")) {
@@ -21946,12 +21926,15 @@ class MainController {
       }
       if (soundIcon) {
         this.model.toggleClass(soundIcon, "soundOff");
-        // if (soundIcon.classList.contains("soundOff")) {
-        //   sound = false;
-        // } else {
-        //   sound = true;
-        // }
       }
+    });
+    this.mainContainer.querySelector(".main-menu__list").addEventListener("click", event => {
+      event.preventDefault();
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants_js__WEBPACK_IMPORTED_MODULE_9__.open.play();
+      }
+      window.location.hash = event.target.getAttribute("href");
+      this.updateState();
     });
     this.updateState(); //первая отрисовка
   }
@@ -22032,8 +22015,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 class GarageView {
-  // constructor() {}
-
   render() {
     return `
     <section class="main-page">
