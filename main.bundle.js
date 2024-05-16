@@ -20470,6 +20470,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
 /* harmony import */ var _ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ModalWindowCarMod */ "./src/components/ModalWindowCarMod.js");
 /* harmony import */ var _pages_Garage__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../pages/Garage */ "./src/pages/Garage.js");
+/* harmony import */ var _constants_constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../constants/constants */ "./src/constants/constants.js");
+
 
 
 
@@ -20576,14 +20578,24 @@ class CarListController {
       switch (clickButton) {
         case null:
           this.model.openCarProfile(clickBlock.id);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_3__.open.play();
+          }
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);
           this.model.renderCountCars();
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_3__.click.play();
+          }
           break;
         case buttonEdit:
           this.model.openModalWindow(clickBlock.id);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_3__.modal.play();
+          }
           break;
+        default:
       }
     }
   }
@@ -20632,6 +20644,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ModalWindowNoteMod */ "./src/components/ModalWindowNoteMod.js");
 /* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
 /* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
+/* harmony import */ var _constants_constants__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ../constants/constants */ "./src/constants/constants.js");
+
 
 
 
@@ -20652,7 +20666,7 @@ class CarProfileView {
     <p>Год:<span> ${data.year}</span></p>
     <p>Цвет:<span> ${data.color}</span></p>
     <p>Регистрационный номер:<span> ${data.carPlate}</span></p>
-    <p>Пробег:<span> ${data.mileage}</span></p>
+    <p>Пробег:<span class="mileage-info"> ${data.mileage}</span></p>
     </div>
     <div class="car-img">${this.carSvg.outerHTML}</div>
     </div>
@@ -20672,6 +20686,10 @@ class CarProfileView {
   }
   openModalWindow() {
     _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_2__["default"].view.showModalWindow();
+  }
+  renderUpdateMileage(data) {
+    const mileage = document.querySelector(".mileage-info");
+    mileage.textContent = data.mileage;
   }
   renderNoteList(profileId) {
     this.partsList = document.querySelector(".installed-parts-list");
@@ -20741,12 +20759,21 @@ class CarProfileController {
       switch (clickButton) {
         case history:
           this.model.renderNoteList(this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_5__.click.play();
+          }
           break;
         case installedParts:
           this.model.showParts(this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_5__.click.play();
+          }
           break;
         case addNote:
           this.model.openModalWindow();
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_5__.modal.play();
+          }
           break;
       }
     }
@@ -20779,7 +20806,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 const ContentContainer = {
   render: () => {
-    return `<div class="content" id="content"></div>`;
+    return `<main class="content" id="content"></main>`;
   }
 };
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (ContentContainer);
@@ -21014,6 +21041,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
+
 class ModalWindowView {
   constructor(overlay) {
     this.overlay = overlay;
@@ -21191,8 +21219,14 @@ class ModalWindowController {
       if (buttonSave.classList.contains("update")) {
         data.id = buttonSave.getAttribute("data-id");
         this.model.updateCar(data);
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants__WEBPACK_IMPORTED_MODULE_0__.modal.play();
+        }
       } else {
         this.model.createCar(data);
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants__WEBPACK_IMPORTED_MODULE_0__.modal.play();
+        }
       }
       this.model.cleanModalWindow();
       this.model.closeModalWindow();
@@ -21200,6 +21234,9 @@ class ModalWindowController {
     if (closeIcon) {
       this.model.cleanModalWindow();
       this.model.closeModalWindow();
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants__WEBPACK_IMPORTED_MODULE_0__.click.play();
+      }
     }
   }
   inputHandler(event) {
@@ -21276,6 +21313,10 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
 /* harmony import */ var _NoteList__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./NoteList */ "./src/components/NoteList.js");
+/* harmony import */ var _CarProfile__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./CarProfile */ "./src/components/CarProfile.js");
+/* harmony import */ var _constants_constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../constants/constants */ "./src/constants/constants.js");
+
+
 
 
 class NoteModView {
@@ -21372,9 +21413,11 @@ class NoteModView {
   }
   renderNoteBlock(data) {
     _NoteList__WEBPACK_IMPORTED_MODULE_1__["default"].view.renderNoteBlock(data);
+    _CarProfile__WEBPACK_IMPORTED_MODULE_2__["default"].view.renderUpdateMileage(data);
   }
   updateNoteBlock(data) {
     _NoteList__WEBPACK_IMPORTED_MODULE_1__["default"].view.updateNoteBlock(data);
+    _CarProfile__WEBPACK_IMPORTED_MODULE_2__["default"].view.renderUpdateMileage(data);
   }
   closeModalWindow() {
     this.setDisabled(true, this.buttonSave);
@@ -21506,10 +21549,16 @@ class NoteModController {
       };
       this.model.createPart(data);
       this.model.setDisabled(true, this.buttonAdd);
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants__WEBPACK_IMPORTED_MODULE_3__.click.play();
+      }
     }
     if (buttonRemove) {
       const item = event.target.closest(".list-item");
       this.model.removeItem(item, this.profileId);
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants__WEBPACK_IMPORTED_MODULE_3__.click.play();
+      }
     }
     if (buttonSave) {
       this.container = document.querySelector(".modal-window");
@@ -21527,8 +21576,14 @@ class NoteModController {
       if (buttonSave.classList.contains("update")) {
         data.id = buttonSave.getAttribute("data-id");
         this.model.updateNote(data);
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants__WEBPACK_IMPORTED_MODULE_3__.modal.play();
+        }
       } else {
         this.model.createNote(data);
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants__WEBPACK_IMPORTED_MODULE_3__.modal.play();
+        }
       }
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
@@ -21536,6 +21591,9 @@ class NoteModController {
     if (closeIcon) {
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants__WEBPACK_IMPORTED_MODULE_3__.click.play();
+      }
     }
   }
 }
@@ -21567,14 +21625,19 @@ __webpack_require__.r(__webpack_exports__);
 const NavBar = {
   render: () => {
     return `
+    <header>
       <nav class="main-menu" id="main-menu">
         <ul class="main-menu__list">
           <li><a class="main-menu__link" href="#main">Гараж</a></li>
           <li><a class="main-menu__link" href="#statistics">Статистика</a></li>
           <li><a class="main-menu__link" href="#about">О нас</a></li>
         </ul>
+        <div>
+        <div class ="sound"></div>
         <button class="btn exit">Выход</button>
+        </div>
         </nav>
+    </header>
     `;
   }
 };
@@ -21594,6 +21657,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */ });
 /* harmony import */ var _ModalWindowNoteMod__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ModalWindowNoteMod */ "./src/components/ModalWindowNoteMod.js");
 /* harmony import */ var _FirebaseAPI__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./FirebaseAPI */ "./src/components/FirebaseAPI.js");
+/* harmony import */ var _constants_constants__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../constants/constants */ "./src/constants/constants.js");
+
 
 
 class NoteListView {
@@ -21689,13 +21754,22 @@ class NoteListController {
       switch (clickButton) {
         case null:
           this.model.openText(clickBlock);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_2__.click.play();
+          }
           break;
         case removeNote:
           const item = event.target.closest(".note-block");
           this.model.removeItem(item, this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_2__.click.play();
+          }
           break;
         case updateNote:
           this.model.openModalWindow(clickBlock.id, this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            _constants_constants__WEBPACK_IMPORTED_MODULE_2__.modal.play();
+          }
           break;
       }
     }
@@ -21725,8 +21799,17 @@ const NoteList = new NoteListMain();
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
 /* harmony export */   ALL_YEARS: () => (/* binding */ ALL_YEARS),
-/* harmony export */   OPTIONS: () => (/* binding */ OPTIONS)
+/* harmony export */   OPTIONS: () => (/* binding */ OPTIONS),
+/* harmony export */   click: () => (/* binding */ click),
+/* harmony export */   modal: () => (/* binding */ modal),
+/* harmony export */   open: () => (/* binding */ open)
 /* harmony export */ });
+/* harmony import */ var _audio_click_mp3__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../audio/click.mp3 */ "./src/audio/click.mp3");
+/* harmony import */ var _audio_open_mp3__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../audio/open.mp3 */ "./src/audio/open.mp3");
+/* harmony import */ var _audio_modal_mp3__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../audio/modal.mp3 */ "./src/audio/modal.mp3");
+
+
+
 const OPTIONS = {
   brands: ["Не выбрано", "Hyundai", "KIA", "Lada", "Renault", "Volkswagen"],
   models: [["Не выбрано"], ["Не выбрано", "Accent", "Creta", "Elantra", "Genesis", "Santa Fe", "Solaris", "Sonata", "Tucson", "i30", "i40"], ["Не выбрано", "Ceed", "Ceed SW", "Cerato", "Optima", "Picanto", "Rio", "Sorento", "Soul", "Sportage", "Stinger"], ["Не выбрано", "Granta", "Kalina", "Largus", "Niva", "Priora", "Vesta", "Vesta Cross", "XRAY"], ["Не выбрано", "Dokker", "Duster", "Fluence", "Kaptur", "Laguna", "Logan", "Megan", "Sandero", "Talisman", "Trafic"], ["Не выбрано", "Caddy", "Caravelle", "Golf", "Jetta", "Passat", "Polo", "Polo sedan", "Sharan", "Transporter", "Vento"]]
@@ -21737,6 +21820,9 @@ const ALL_YEARS = Array.from({
   length: currentYear - startYear + 1
 }, (_, i) => startYear + i);
 ALL_YEARS.unshift("Не выбрано");
+const click = new Audio(_audio_click_mp3__WEBPACK_IMPORTED_MODULE_0__);
+const open = new Audio(_audio_open_mp3__WEBPACK_IMPORTED_MODULE_1__);
+const modal = new Audio(_audio_modal_mp3__WEBPACK_IMPORTED_MODULE_2__);
 
 /***/ }),
 
@@ -21775,6 +21861,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _pages_Statistics_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./pages/Statistics.js */ "./src/pages/Statistics.js");
 /* harmony import */ var _components_NavBar_js__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./components/NavBar.js */ "./src/components/NavBar.js");
 /* harmony import */ var _components_ContentContainer_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./components/ContentContainer.js */ "./src/components/ContentContainer.js");
+/* harmony import */ var _constants_constants_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./constants/constants.js */ "./src/constants/constants.js");
+
 
 
 
@@ -21816,6 +21904,9 @@ class MainView {
     this.contentContainer.innerHTML = routes[routeName].render();
     this.updateButtons(routes[routeName].id);
   }
+  toggleClass(item, name) {
+    item.classList.toggle(name);
+  }
 }
 class MainModel {
   constructor(view) {
@@ -21823,6 +21914,9 @@ class MainModel {
   }
   updateState(_pageName) {
     this.view.renderContent(_pageName);
+  }
+  toggleClass(item, name) {
+    this.view.toggleClass(item, name);
   }
 }
 class MainController {
@@ -21835,13 +21929,28 @@ class MainController {
     window.addEventListener("hashchange", () => this.updateState());
     this.mainContainer.querySelector(".main-menu__list").addEventListener("click", event => {
       event.preventDefault();
+      if (!document.querySelector(".soundOff")) {
+        _constants_constants_js__WEBPACK_IMPORTED_MODULE_9__.open.play();
+      }
       window.location.hash = event.target.getAttribute("href");
       this.updateState();
     });
     this.mainContainer.addEventListener("click", event => {
       const exit = event.target.closest(".exit");
+      const soundIcon = event.target.closest(".sound");
       if (exit) {
         _components_FirebaseAPI_js__WEBPACK_IMPORTED_MODULE_2__["default"].logOut();
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants_js__WEBPACK_IMPORTED_MODULE_9__.open.play();
+        }
+      }
+      if (soundIcon) {
+        this.model.toggleClass(soundIcon, "soundOff");
+        // if (soundIcon.classList.contains("soundOff")) {
+        //   sound = false;
+        // } else {
+        //   sound = true;
+        // }
       }
     });
     this.updateState(); //первая отрисовка
@@ -21917,6 +22026,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _components_ModalWindowCarMod__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ../components/ModalWindowCarMod */ "./src/components/ModalWindowCarMod.js");
 /* harmony import */ var _components_CarList__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ../components/CarList */ "./src/components/CarList.js");
 /* harmony import */ var _components_CarProfile__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../components/CarProfile */ "./src/components/CarProfile.js");
+/* harmony import */ var _constants_constants__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ../constants/constants */ "./src/constants/constants.js");
+
 
 
 
@@ -21959,6 +22070,9 @@ class GarageController {
     document.querySelector("#root").addEventListener("click", event => {
       const buttonAdd = event.target.closest(".add-auto");
       if (buttonAdd) {
+        if (!document.querySelector(".soundOff")) {
+          _constants_constants__WEBPACK_IMPORTED_MODULE_3__.modal.play();
+        }
         this.model.openModalWindow();
       }
     });
@@ -22674,7 +22788,7 @@ input[type=color] {
 }
 
 .login-label {
-  width: 300px;
+  width: 320px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -22845,6 +22959,11 @@ body {
   justify-content: space-between;
   align-items: center;
 }
+.main-menu div {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
 
 .main-menu__list {
   padding: 0;
@@ -22889,7 +23008,15 @@ body {
 
 .add-auto {
   margin-bottom: 40px;
-}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss","webpack://./src/scss/_modalWindow.scss","webpack://./src/scss/_var.scss","webpack://./src/scss/_carProfile.scss","webpack://./src/scss/_carList.scss","webpack://./src/scss/_loginForm.scss","webpack://./src/scss/_loader.scss"],"names":[],"mappings":"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","sourcesContent":["@import \"./modalWindow\";\r\n@import \"./carProfile\";\r\n@import \"./carList\";\r\n@import \"./var\";\r\n@import \"./loginForm\";\r\n@import \"./loader\";\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n  @media (max-width: $small) {\r\n    font-size: 12px;\r\n  }\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\n#overlay {\r\n  position: fixed;\r\n  width: 100vw;\r\n  height: 100vh;\r\n  top: 0;\r\n  left: 0;\r\n  background-color: rgba(0, 0, 0);\r\n  opacity: 0;\r\n  z-index: -1;\r\n  transition: 0.5s;\r\n}\r\n\r\n#overlay.active {\r\n  display: block;\r\n  opacity: 0.2;\r\n  z-index: 10;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  max-width: 1200px;\r\n  margin: auto;\r\n  font-family: \"Exo 2\", sans-serif;\r\n  background-color: $bg-color;\r\n  color: $black;\r\n  overflow: hidden;\r\n  @media (max-width: $small) {\r\n    padding: 10px;\r\n  }\r\n}\r\n\r\n.btn {\r\n  width: fit-content;\r\n  height: 30px;\r\n  background-color: $green;\r\n  color: white;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  padding: 0 15px 0 15px;\r\n  transition: 0.5s;\r\n  cursor: pointer;\r\n}\r\n\r\n.btn:hover {\r\n  background-color: $black;\r\n}\r\n\r\n.btn:disabled {\r\n  background-color: $color-disabled;\r\n  cursor: default;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  display: flex;\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n  transition: 0.5s;\r\n  color: $black;\r\n  @media (max-width: $small) {\r\n    padding: 10px 10px;\r\n  }\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: $black;\r\n  color: $white;\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: $green;\r\n  color: $white;\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n.add-auto {\r\n  margin-bottom: 40px;\r\n}\r\n","@import \"./var\";\r\n\r\n.modal-window {\r\n  position: absolute;\r\n  display: flex;\r\n  flex-direction: column;\r\n  max-width: 1000px;\r\n  width: 70vw;\r\n  height: auto;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(100%, -50%);\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  gap: 1rem;\r\n  padding: 2rem;\r\n  opacity: 0.5;\r\n  background-color: $bg-color-modal;\r\n  transition: 0.5s;\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 85vw;\r\n  }\r\n\r\n  ol {\r\n    font-size: 1.2rem;\r\n    font-weight: 700;\r\n    li {\r\n      font-size: 1rem;\r\n      margin-top: 5px;\r\n    }\r\n  }\r\n}\r\n\r\n.close {\r\n  position: absolute;\r\n  right: 10px;\r\n  top: 10px;\r\n  cursor: pointer;\r\n}\r\n\r\n.modal-window_open {\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  opacity: 1;\r\n  z-index: 15;\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  font-size: 1.2rem;\r\n  font-weight: 700;\r\n  select,\r\n  input {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 0 10px 0 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  textarea {\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  select:hover,\r\n  input:hover,\r\n  textarea:hover {\r\n    border: 1px solid $black;\r\n  }\r\n\r\n  select:focus,\r\n  input:focus,\r\n  textarea:focus {\r\n    outline: none;\r\n    border: 2px solid $green;\r\n  }\r\n\r\n  select:invalid,\r\n  input:invalid,\r\n  textarea:invalid {\r\n    outline: none;\r\n    border: 2px solid red;\r\n  }\r\n}\r\n\r\ninput[type=\"color\"] {\r\n  background-color: $white;\r\n  padding: 0 2px 0 2px;\r\n}\r\n\r\n.info-block {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n}\r\n\r\n.info-parts {\r\n  padding-top: 20px;\r\n}\r\n\r\n.button-save,\r\n.button-save-note {\r\n  align-self: center;\r\n}\r\n","$bg-color: aliceblue;\r\n$bg-color-modal: #def2f1;\r\n$white: #fff;\r\n$col: #444444;\r\n$base-border-radius: 10px;\r\n$green: #2b7a78;\r\n$black: #17252a;\r\n$color-disabled: #2b7a7860;\r\n\r\n$tablet: 1100px;\r\n$between: 800px;\r\n$mobile: 600px;\r\n$small: 470px;\r\n","@import \"./var\";\r\n\r\n.profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n  font-size: 1rem;\r\n  font-weight: 700;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  height: 40vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  margin-top: 40px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.note-block {\r\n  height: 100px;\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin: 1px 0 1px 0;\r\n  cursor: pointer;\r\n  p {\r\n    margin: 5px 0 5px 0;\r\n  }\r\n}\r\n\r\n.note-block.open-text {\r\n  height: auto;\r\n}\r\n\r\n.info-note-list {\r\n  height: 85%;\r\n  overflow-y: hidden;\r\n  width: 700px;\r\n  padding: 0px 10px 20px 20px;\r\n\r\n  @media (max-width: $tablet) {\r\n    width: 500px;\r\n  }\r\n\r\n  @media (max-width: $between) {\r\n    width: 400px;\r\n  }\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 280px;\r\n  }\r\n\r\n  @media (max-width: $small) {\r\n    width: auto;\r\n  }\r\n}\r\n\r\n.installed-parts-list {\r\n  height: 45vh;\r\n  overflow-y: auto;\r\n  margin-top: 40px;\r\n  font-size: 1.5rem;\r\n  padding: 10px 20px;\r\n  margin-bottom: 0;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n\r\n  div {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    font-weight: 700;\r\n  }\r\n\r\n  li {\r\n    font-size: 1.2rem;\r\n    display: flex;\r\n    justify-content: space-between;\r\n  }\r\n}\r\n\r\n.note-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.exists {\r\n  align-self: center;\r\n}\r\n\r\n.note-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n",".car-list {\r\n  height: 60vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.car-block {\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin-top: 2px;\r\n  cursor: pointer;\r\n\r\n  p {\r\n    span {\r\n      padding-left: 10px;\r\n    }\r\n  }\r\n\r\n  .color {\r\n    display: flex;\r\n    span {\r\n      display: block;\r\n      width: 20px;\r\n      height: 20px;\r\n      margin-left: 10px;\r\n      border-radius: 50%;\r\n    }\r\n  }\r\n}\r\n\r\n.car-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.car-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n\r\n.info-car-list {\r\n  max-width: 500px;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 0 20px;\r\n  padding: 0 10px 0 20px;\r\n  font-weight: 600;\r\n  p {\r\n    margin: 10px 0 10px 0;\r\n  }\r\n}\r\n\r\n.control {\r\n  display: flex;\r\n  gap: 10px;\r\n  padding: 0 10px 0 10px;\r\n  @media (max-width: $between) {\r\n    flex-direction: column;\r\n  }\r\n}\r\n",".login-form {\r\n  transform: translateY(50%);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 10px;\r\n}\r\n\r\n.login-label {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  input {\r\n    width: 200px;\r\n  }\r\n}\r\n\r\n.buttons-login-form {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-around;\r\n  margin-top: 10px;\r\n}\r\n\r\n.info-login-form {\r\n  color: red;\r\n}\r\n",".loader {\r\n  transform: rotateZ(45deg);\r\n  perspective: 1000px;\r\n  border-radius: 50%;\r\n  width: 70px;\r\n  height: 70px;\r\n  color: #fff;\r\n  margin-top: 15vh;\r\n}\r\n.loader:before,\r\n.loader:after {\r\n  content: \"\";\r\n  display: block;\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: inherit;\r\n  height: inherit;\r\n  border-radius: 50%;\r\n  transform: rotateX(70deg);\r\n  animation: 1s spin linear infinite;\r\n}\r\n.loader:after {\r\n  color: #ff3d00;\r\n  transform: rotateY(70deg);\r\n  animation-delay: 0.4s;\r\n}\r\n\r\n@keyframes rotate {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotateZ(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotateZ(360deg);\r\n  }\r\n}\r\n\r\n@keyframes rotateccw {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotate(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotate(-360deg);\r\n  }\r\n}\r\n\r\n@keyframes spin {\r\n  0%,\r\n  100% {\r\n    box-shadow: 0.2em 0px 0 0px currentcolor;\r\n  }\r\n  12% {\r\n    box-shadow: 0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  25% {\r\n    box-shadow: 0 0.2em 0 0px currentcolor;\r\n  }\r\n  37% {\r\n    box-shadow: -0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  50% {\r\n    box-shadow: -0.2em 0 0 0 currentcolor;\r\n  }\r\n  62% {\r\n    box-shadow: -0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n  75% {\r\n    box-shadow: 0px -0.2em 0 0 currentcolor;\r\n  }\r\n  87% {\r\n    box-shadow: 0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
+}
+
+.sound::before {
+  content: "🔊";
+}
+
+.sound.soundOff::before {
+  content: "🔇";
+}`, "",{"version":3,"sources":["webpack://./src/scss/style.scss","webpack://./src/scss/_modalWindow.scss","webpack://./src/scss/_var.scss","webpack://./src/scss/_carProfile.scss","webpack://./src/scss/_carList.scss","webpack://./src/scss/_loginForm.scss","webpack://./src/scss/_loader.scss"],"names":[],"mappings":"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","sourcesContent":["@import \"./modalWindow\";\r\n@import \"./carProfile\";\r\n@import \"./carList\";\r\n@import \"./var\";\r\n@import \"./loginForm\";\r\n@import \"./loader\";\r\n\r\nhtml {\r\n  box-sizing: border-box;\r\n  @media (max-width: $small) {\r\n    font-size: 12px;\r\n  }\r\n}\r\n\r\n*,\r\n*:before,\r\n*:after {\r\n  box-sizing: inherit;\r\n}\r\n\r\n#overlay {\r\n  position: fixed;\r\n  width: 100vw;\r\n  height: 100vh;\r\n  top: 0;\r\n  left: 0;\r\n  background-color: rgba(0, 0, 0);\r\n  opacity: 0;\r\n  z-index: -1;\r\n  transition: 0.5s;\r\n}\r\n\r\n#overlay.active {\r\n  display: block;\r\n  opacity: 0.2;\r\n  z-index: 10;\r\n}\r\n\r\nbody {\r\n  padding: 20px;\r\n  max-width: 1200px;\r\n  margin: auto;\r\n  font-family: \"Exo 2\", sans-serif;\r\n  background-color: $bg-color;\r\n  color: $black;\r\n  overflow: hidden;\r\n  @media (max-width: $small) {\r\n    padding: 10px;\r\n  }\r\n}\r\n\r\n.btn {\r\n  width: fit-content;\r\n  height: 30px;\r\n  background-color: $green;\r\n  color: white;\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  padding: 0 15px 0 15px;\r\n  transition: 0.5s;\r\n  cursor: pointer;\r\n}\r\n\r\n.btn:hover {\r\n  background-color: $black;\r\n}\r\n\r\n.btn:disabled {\r\n  background-color: $color-disabled;\r\n  cursor: default;\r\n}\r\n\r\n.title {\r\n  font-size: 24px;\r\n  text-align: center;\r\n}\r\n\r\n.main-menu {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n\r\n  div {\r\n    display: flex;\r\n    align-items: center;\r\n    gap: 20px;\r\n    // justify-content: space-between;\r\n  }\r\n}\r\n\r\n.main-menu__list {\r\n  padding: 0;\r\n  margin: 0;\r\n  list-style: none;\r\n  display: flex;\r\n}\r\n\r\n.main-menu li {\r\n  list-style: none;\r\n}\r\n\r\n.main-menu__link {\r\n  display: block;\r\n  padding: 10px 25px;\r\n  font-weight: 600;\r\n  text-decoration: none;\r\n  transition: 0.5s;\r\n  color: $black;\r\n  @media (max-width: $small) {\r\n    padding: 10px 10px;\r\n  }\r\n}\r\n\r\n.main-menu__link:hover {\r\n  text-decoration: none;\r\n  background-color: $black;\r\n  color: $white;\r\n}\r\n\r\n.main-menu__link.active {\r\n  text-decoration: none;\r\n  background-color: $green;\r\n  color: $white;\r\n}\r\n\r\n.content {\r\n  padding: 1.5em 0;\r\n}\r\n\r\n.add-auto {\r\n  margin-bottom: 40px;\r\n}\r\n\r\n.sound::before {\r\n  content: \"\\1F50A\";\r\n}\r\n\r\n.sound.soundOff::before {\r\n  content: \"\\1F507\";\r\n}\r\n","@import \"./var\";\r\n\r\n.modal-window {\r\n  position: absolute;\r\n  display: flex;\r\n  flex-direction: column;\r\n  max-width: 1000px;\r\n  width: 70vw;\r\n  height: auto;\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(100%, -50%);\r\n  border: none;\r\n  border-radius: $base-border-radius;\r\n  gap: 1rem;\r\n  padding: 2rem;\r\n  opacity: 0.5;\r\n  background-color: $bg-color-modal;\r\n  transition: 0.5s;\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 85vw;\r\n  }\r\n\r\n  ol {\r\n    font-size: 1.2rem;\r\n    font-weight: 700;\r\n    li {\r\n      font-size: 1rem;\r\n      margin-top: 5px;\r\n    }\r\n  }\r\n}\r\n\r\n.close {\r\n  position: absolute;\r\n  right: 10px;\r\n  top: 10px;\r\n  cursor: pointer;\r\n}\r\n\r\n.modal-window_open {\r\n  top: 50%;\r\n  left: 50%;\r\n  transform: translate(-50%, -50%);\r\n  opacity: 1;\r\n  z-index: 15;\r\n}\r\n\r\nlabel {\r\n  display: flex;\r\n  justify-content: space-between;\r\n  font-size: 1.2rem;\r\n  font-weight: 700;\r\n  select,\r\n  input {\r\n    width: 30%;\r\n    height: 2rem;\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 0 10px 0 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  textarea {\r\n    border-radius: $base-border-radius;\r\n    border: none;\r\n    padding: 10px;\r\n    font-size: 1rem;\r\n    font-weight: normal;\r\n  }\r\n\r\n  select:hover,\r\n  input:hover,\r\n  textarea:hover {\r\n    border: 1px solid $black;\r\n  }\r\n\r\n  select:focus,\r\n  input:focus,\r\n  textarea:focus {\r\n    outline: none;\r\n    border: 2px solid $green;\r\n  }\r\n\r\n  select:invalid,\r\n  input:invalid,\r\n  textarea:invalid {\r\n    outline: none;\r\n    border: 2px solid red;\r\n  }\r\n}\r\n\r\ninput[type=\"color\"] {\r\n  background-color: $white;\r\n  padding: 0 2px 0 2px;\r\n}\r\n\r\n.info-block {\r\n  display: flex;\r\n  flex-direction: column;\r\n  gap: 10px;\r\n}\r\n\r\n.info-parts {\r\n  padding-top: 20px;\r\n}\r\n\r\n.button-save,\r\n.button-save-note {\r\n  align-self: center;\r\n}\r\n","$bg-color: aliceblue;\r\n$bg-color-modal: #def2f1;\r\n$white: #fff;\r\n$col: #444444;\r\n$base-border-radius: 10px;\r\n$green: #2b7a78;\r\n$black: #17252a;\r\n$color-disabled: #2b7a7860;\r\n\r\n$tablet: 1100px;\r\n$between: 800px;\r\n$mobile: 600px;\r\n$small: 470px;\r\n","@import \"./var\";\r\n\r\n.profile {\r\n  display: flex;\r\n  flex-direction: column;\r\n}\r\n\r\n.car-info {\r\n  display: flex;\r\n  justify-content: space-around;\r\n  font-size: 1rem;\r\n  font-weight: 700;\r\n}\r\n\r\n.car-img {\r\n  svg {\r\n    width: 100%;\r\n    height: 100%;\r\n  }\r\n}\r\n\r\n.profile-control-panel {\r\n  display: flex;\r\n  justify-content: space-around;\r\n}\r\n\r\n.note-list {\r\n  height: 40vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  margin-top: 40px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.note-block {\r\n  height: 100px;\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin: 1px 0 1px 0;\r\n  cursor: pointer;\r\n  p {\r\n    margin: 5px 0 5px 0;\r\n  }\r\n}\r\n\r\n.note-block.open-text {\r\n  height: auto;\r\n}\r\n\r\n.info-note-list {\r\n  height: 85%;\r\n  overflow-y: hidden;\r\n  width: 700px;\r\n  padding: 0px 10px 20px 20px;\r\n\r\n  @media (max-width: $tablet) {\r\n    width: 500px;\r\n  }\r\n\r\n  @media (max-width: $between) {\r\n    width: 400px;\r\n  }\r\n\r\n  @media (max-width: $mobile) {\r\n    width: 280px;\r\n  }\r\n\r\n  @media (max-width: $small) {\r\n    width: auto;\r\n  }\r\n}\r\n\r\n.installed-parts-list {\r\n  height: 45vh;\r\n  overflow-y: auto;\r\n  margin-top: 40px;\r\n  font-size: 1.5rem;\r\n  padding: 10px 20px;\r\n  margin-bottom: 0;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n\r\n  div {\r\n    display: flex;\r\n    justify-content: space-between;\r\n    font-weight: 700;\r\n  }\r\n\r\n  li {\r\n    font-size: 1.2rem;\r\n    display: flex;\r\n    justify-content: space-between;\r\n  }\r\n}\r\n\r\n.note-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.exists {\r\n  align-self: center;\r\n}\r\n\r\n.note-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.note-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n",".car-list {\r\n  height: 60vh;\r\n  display: flex;\r\n  flex-direction: column;\r\n  overflow: auto;\r\n  align-items: center;\r\n  gap: 20px;\r\n  scrollbar-color: $black $white; /* «цвет ползунка» «цвет полосы скроллбара» */\r\n  scrollbar-width: thin; /* толщина */\r\n}\r\n\r\n.car-block {\r\n  display: flex;\r\n  align-items: center;\r\n  border-radius: $base-border-radius;\r\n  background-color: $white;\r\n  transition: 0.2s;\r\n  margin-top: 2px;\r\n  cursor: pointer;\r\n\r\n  p {\r\n    span {\r\n      padding-left: 10px;\r\n    }\r\n  }\r\n\r\n  .color {\r\n    display: flex;\r\n    span {\r\n      display: block;\r\n      width: 20px;\r\n      height: 20px;\r\n      margin-left: 10px;\r\n      border-radius: 50%;\r\n    }\r\n  }\r\n}\r\n\r\n.car-block:hover {\r\n  border: 2px solid $black;\r\n  transform: scale(1.02);\r\n}\r\n\r\n.car-list::-webkit-scrollbar {\r\n  width: 10px;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-track {\r\n  background: $black;\r\n}\r\n\r\n.car-list::-webkit-scrollbar-thumb {\r\n  background-color: $white;\r\n\r\n  border: 2px solid $black;\r\n}\r\n\r\n.info-car-list {\r\n  max-width: 500px;\r\n  display: flex;\r\n  flex-wrap: wrap;\r\n  gap: 0 20px;\r\n  padding: 0 10px 0 20px;\r\n  font-weight: 600;\r\n  p {\r\n    margin: 10px 0 10px 0;\r\n  }\r\n}\r\n\r\n.control {\r\n  display: flex;\r\n  gap: 10px;\r\n  padding: 0 10px 0 10px;\r\n  @media (max-width: $between) {\r\n    flex-direction: column;\r\n  }\r\n}\r\n",".login-form {\r\n  transform: translateY(50%);\r\n  display: flex;\r\n  flex-direction: column;\r\n  align-items: center;\r\n  gap: 10px;\r\n}\r\n\r\n.login-label {\r\n  width: 320px;\r\n  display: flex;\r\n  justify-content: space-between;\r\n  align-items: center;\r\n  input {\r\n    width: 200px;\r\n  }\r\n}\r\n\r\n.buttons-login-form {\r\n  width: 300px;\r\n  display: flex;\r\n  justify-content: space-around;\r\n  margin-top: 10px;\r\n}\r\n\r\n.info-login-form {\r\n  color: red;\r\n}\r\n",".loader {\r\n  transform: rotateZ(45deg);\r\n  perspective: 1000px;\r\n  border-radius: 50%;\r\n  width: 70px;\r\n  height: 70px;\r\n  color: #fff;\r\n  margin-top: 15vh;\r\n}\r\n.loader:before,\r\n.loader:after {\r\n  content: \"\";\r\n  display: block;\r\n  position: absolute;\r\n  top: 0;\r\n  left: 0;\r\n  width: inherit;\r\n  height: inherit;\r\n  border-radius: 50%;\r\n  transform: rotateX(70deg);\r\n  animation: 1s spin linear infinite;\r\n}\r\n.loader:after {\r\n  color: #ff3d00;\r\n  transform: rotateY(70deg);\r\n  animation-delay: 0.4s;\r\n}\r\n\r\n@keyframes rotate {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotateZ(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotateZ(360deg);\r\n  }\r\n}\r\n\r\n@keyframes rotateccw {\r\n  0% {\r\n    transform: translate(-50%, -50%) rotate(0deg);\r\n  }\r\n  100% {\r\n    transform: translate(-50%, -50%) rotate(-360deg);\r\n  }\r\n}\r\n\r\n@keyframes spin {\r\n  0%,\r\n  100% {\r\n    box-shadow: 0.2em 0px 0 0px currentcolor;\r\n  }\r\n  12% {\r\n    box-shadow: 0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  25% {\r\n    box-shadow: 0 0.2em 0 0px currentcolor;\r\n  }\r\n  37% {\r\n    box-shadow: -0.2em 0.2em 0 0 currentcolor;\r\n  }\r\n  50% {\r\n    box-shadow: -0.2em 0 0 0 currentcolor;\r\n  }\r\n  62% {\r\n    box-shadow: -0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n  75% {\r\n    box-shadow: 0px -0.2em 0 0 currentcolor;\r\n  }\r\n  87% {\r\n    box-shadow: 0.2em -0.2em 0 0 currentcolor;\r\n  }\r\n}\r\n"],"sourceRoot":""}]);
 // Exports
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (___CSS_LOADER_EXPORT___);
 
@@ -23718,6 +23845,36 @@ function __classPrivateFieldIn(state, receiver) {
     return typeof state === "function" ? receiver === state : state.has(receiver);
 }
 
+
+/***/ }),
+
+/***/ "./src/audio/click.mp3":
+/*!*****************************!*\
+  !*** ./src/audio/click.mp3 ***!
+  \*****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "img/click.mp3";
+
+/***/ }),
+
+/***/ "./src/audio/modal.mp3":
+/*!*****************************!*\
+  !*** ./src/audio/modal.mp3 ***!
+  \*****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "img/modal.mp3";
+
+/***/ }),
+
+/***/ "./src/audio/open.mp3":
+/*!****************************!*\
+  !*** ./src/audio/open.mp3 ***!
+  \****************************/
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+module.exports = __webpack_require__.p + "img/open.mp3";
 
 /***/ }),
 
@@ -26202,6 +26359,29 @@ const unwrap = (value) => reverseTransformCache.get(value);
 /******/ 			}
 /******/ 			Object.defineProperty(exports, '__esModule', { value: true });
 /******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/publicPath */
+/******/ 	(() => {
+/******/ 		var scriptUrl;
+/******/ 		if (__webpack_require__.g.importScripts) scriptUrl = __webpack_require__.g.location + "";
+/******/ 		var document = __webpack_require__.g.document;
+/******/ 		if (!scriptUrl && document) {
+/******/ 			if (document.currentScript)
+/******/ 				scriptUrl = document.currentScript.src;
+/******/ 			if (!scriptUrl) {
+/******/ 				var scripts = document.getElementsByTagName("script");
+/******/ 				if(scripts.length) {
+/******/ 					var i = scripts.length - 1;
+/******/ 					while (i > -1 && (!scriptUrl || !/^http(s?):/.test(scriptUrl))) scriptUrl = scripts[i--].src;
+/******/ 				}
+/******/ 			}
+/******/ 		}
+/******/ 		// When supporting browsers where an automatic publicPath is not supported you must specify an output.publicPath manually via configuration
+/******/ 		// or pass an empty string ("") and set the __webpack_public_path__ variable from your code to use your own logic.
+/******/ 		if (!scriptUrl) throw new Error("Automatic publicPath is not supported in this browser");
+/******/ 		scriptUrl = scriptUrl.replace(/#.*$/, "").replace(/\?.*$/, "").replace(/\/[^\/]+$/, "/");
+/******/ 		__webpack_require__.p = scriptUrl;
 /******/ 	})();
 /******/ 	
 /******/ 	/* webpack/runtime/nonce */
