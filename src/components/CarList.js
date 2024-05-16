@@ -173,17 +173,3 @@ class CarListMain {
 const CarList = new CarListMain();
 
 export default CarList;
-
-// async a() {
-//   const snapshot = await Firebase.getItemsArr(Firebase.pathUserCars);
-//   let arr = [];
-//   snapshot.forEach((el) => arr.push(el.data().id));
-
-//   for (let i = 0; arr.length > i; i++) {
-//     const snap = await Firebase.getItemsArr(
-//       `${Firebase.pathUserCars}/${arr[i]}/parts`
-//     );
-
-//     console.log(snap.docs);
-//   }
-// }

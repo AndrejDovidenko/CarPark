@@ -80,6 +80,24 @@ class MainController {
   addListeners() {
     window.addEventListener("hashchange", () => this.updateState());
 
+    const control = this.mainContainer.querySelector(".control-header");
+
+    control.addEventListener("click", (event) => {
+      const exit = event.target.closest(".exit");
+      const soundIcon = event.target.closest(".sound");
+      console.log(soundIcon);
+      if (exit) {
+        Firebase.logOut();
+        if (!document.querySelector(".soundOff")) {
+          open.play();
+        }
+      }
+
+      if (soundIcon) {
+        this.model.toggleClass(soundIcon, "soundOff");
+      }
+    });
+
     this.mainContainer
       .querySelector(".main-menu__list")
       .addEventListener("click", (event) => {
@@ -90,26 +108,6 @@ class MainController {
         window.location.hash = event.target.getAttribute("href");
         this.updateState();
       });
-
-    this.mainContainer.addEventListener("click", (event) => {
-      const exit = event.target.closest(".exit");
-      const soundIcon = event.target.closest(".sound");
-      if (exit) {
-        Firebase.logOut();
-        if (!document.querySelector(".soundOff")) {
-          open.play();
-        }
-      }
-
-      if (soundIcon) {
-        this.model.toggleClass(soundIcon, "soundOff");
-        // if (soundIcon.classList.contains("soundOff")) {
-        //   sound = false;
-        // } else {
-        //   sound = true;
-        // }
-      }
-    });
 
     this.updateState(); //первая отрисовка
   }

@@ -1,11 +1,9 @@
 import ModalWindowCarMod from "../components/ModalWindowCarMod";
 import CarList from "../components/CarList";
 import CarProfile from "../components/CarProfile";
-import { sound, modal } from "../constants/constants";
+import { modal } from "../constants/constants";
 
 class GarageView {
-  // constructor() {}
-
   render() {
     return `
     <section class="main-page">

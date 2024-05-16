@@ -8,7 +8,7 @@ const NavBar = {
           <li><a class="main-menu__link" href="#statistics">Статистика</a></li>
           <li><a class="main-menu__link" href="#about">О нас</a></li>
         </ul>
-        <div>
+        <div class= control-header>
         <div class ="sound"></div>
         <button class="btn exit">Выход</button>
         </div>
