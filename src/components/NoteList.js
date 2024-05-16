@@ -1,5 +1,6 @@
 import ModalWindowNoteMod from "./ModalWindowNoteMod";
 import Firebase from "./FirebaseAPI";
+import { click, modal } from "../constants/constants";
 
 class NoteListView {
   constructor() {
@@ -125,13 +126,22 @@ class NoteListController {
       switch (clickButton) {
         case null:
           this.model.openText(clickBlock);
+          if (!document.querySelector(".soundOff")) {
+            click.play();
+          }
           break;
         case removeNote:
           const item = event.target.closest(".note-block");
           this.model.removeItem(item, this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            click.play();
+          }
           break;
         case updateNote:
           this.model.openModalWindow(clickBlock.id, this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            modal.play();
+          }
           break;
       }
     }

@@ -1,6 +1,7 @@
 import Firebase from "./FirebaseAPI";
 import ModalWindowCarMod from "./ModalWindowCarMod";
 import Garage from "../pages/Garage";
+import { click, modal, open } from "../constants/constants";
 
 class CarListView {
   constructor() {
@@ -131,15 +132,24 @@ class CarListController {
       switch (clickButton) {
         case null:
           this.model.openCarProfile(clickBlock.id);
+          if (!document.querySelector(".soundOff")) {
+            open.play();
+          }
           break;
         case buttonRemove:
           this.model.removeElement(clickBlock);
           this.model.renderCountCars();
-
+          if (!document.querySelector(".soundOff")) {
+            click.play();
+          }
           break;
         case buttonEdit:
           this.model.openModalWindow(clickBlock.id);
+          if (!document.querySelector(".soundOff")) {
+            modal.play();
+          }
           break;
+        default:
       }
     }
   }

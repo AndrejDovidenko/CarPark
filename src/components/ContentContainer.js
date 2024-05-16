@@ -1,7 +1,7 @@
 const ContentContainer = {
   render: () => {
-    return `<div class="content" id="content"></div>`;
-  }
+    return `<main class="content" id="content"></main>`;
+  },
 };
 
 export default ContentContainer;

@@ -1,6 +1,7 @@
 import ModalWindowCarMod from "../components/ModalWindowCarMod";
 import CarList from "../components/CarList";
 import CarProfile from "../components/CarProfile";
+import { sound, modal } from "../constants/constants";
 
 class GarageView {
   // constructor() {}
@@ -40,6 +41,7 @@ class GarageModel {
 class GarageController {
   constructor(model) {
     this.model = model;
+
     this.addListeners();
   }
 
@@ -47,6 +49,9 @@ class GarageController {
     document.querySelector("#root").addEventListener("click", (event) => {
       const buttonAdd = event.target.closest(".add-auto");
       if (buttonAdd) {
+        if (!document.querySelector(".soundOff")) {
+          modal.play();
+        }
         this.model.openModalWindow();
       }
     });

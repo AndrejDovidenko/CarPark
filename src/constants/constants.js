@@ -1,3 +1,7 @@
+import clickAudio from "../audio/click.mp3";
+import openAudio from "../audio/open.mp3";
+import modalAudio from "../audio/modal.mp3";
+
 export const OPTIONS = {
   brands: ["Не выбрано", "Hyundai", "KIA", "Lada", "Renault", "Volkswagen"],
   models: [
@@ -77,3 +81,7 @@ export const ALL_YEARS = Array.from(
 );
 
 ALL_YEARS.unshift("Не выбрано");
+
+export const click = new Audio(clickAudio);
+export const open = new Audio(openAudio);
+export const modal = new Audio(modalAudio);

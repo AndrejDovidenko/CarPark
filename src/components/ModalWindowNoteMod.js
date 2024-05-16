@@ -1,5 +1,7 @@
 import Firebase from "./FirebaseAPI";
 import NoteList from "./NoteList";
+import CarProfile from "./CarProfile";
+import { click, modal } from "../constants/constants";
 
 class NoteModView {
   constructor(overlay) {
@@ -118,10 +120,12 @@ class NoteModView {
 
   renderNoteBlock(data) {
     NoteList.view.renderNoteBlock(data);
+    CarProfile.view.renderUpdateMileage(data);
   }
 
   updateNoteBlock(data) {
     NoteList.view.updateNoteBlock(data);
+    CarProfile.view.renderUpdateMileage(data);
   }
 
   closeModalWindow() {
@@ -301,12 +305,17 @@ class NoteModController {
 
       this.model.createPart(data);
       this.model.setDisabled(true, this.buttonAdd);
+      if (!document.querySelector(".soundOff")) {
+        click.play();
+      }
     }
 
     if (buttonRemove) {
       const item = event.target.closest(".list-item");
-
       this.model.removeItem(item, this.profileId);
+      if (!document.querySelector(".soundOff")) {
+        click.play();
+      }
     }
 
     if (buttonSave) {
@@ -328,8 +337,14 @@ class NoteModController {
         data.id = buttonSave.getAttribute("data-id");
 
         this.model.updateNote(data);
+        if (!document.querySelector(".soundOff")) {
+          modal.play();
+        }
       } else {
         this.model.createNote(data);
+        if (!document.querySelector(".soundOff")) {
+          modal.play();
+        }
       }
 
       this.model.closeModalWindow();
@@ -339,6 +354,9 @@ class NoteModController {
     if (closeIcon) {
       this.model.closeModalWindow();
       this.model.cleanModalWindow();
+      if (!document.querySelector(".soundOff")) {
+        click.play();
+      }
     }
   }
 }

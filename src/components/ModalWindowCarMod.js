@@ -2,6 +2,7 @@ import { OPTIONS } from "../constants/constants";
 import { ALL_YEARS } from "../constants/constants";
 import CarList from "./CarList";
 import Firebase from "./FirebaseAPI";
+import { click, modal } from "../constants/constants";
 
 class ModalWindowView {
   constructor(overlay) {
@@ -211,8 +212,14 @@ class ModalWindowController {
         data.id = buttonSave.getAttribute("data-id");
 
         this.model.updateCar(data);
+        if (!document.querySelector(".soundOff")) {
+          modal.play();
+        }
       } else {
         this.model.createCar(data);
+        if (!document.querySelector(".soundOff")) {
+          modal.play();
+        }
       }
 
       this.model.cleanModalWindow();
@@ -222,6 +229,9 @@ class ModalWindowController {
     if (closeIcon) {
       this.model.cleanModalWindow();
       this.model.closeModalWindow();
+      if (!document.querySelector(".soundOff")) {
+        click.play();
+      }
     }
   }
 

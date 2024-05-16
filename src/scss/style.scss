@@ -79,6 +79,13 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    // justify-content: space-between;
+  }
 }
 
 .main-menu__list {
@@ -122,4 +129,12 @@ body {
 
 .add-auto {
   margin-bottom: 40px;
+}
+
+.sound::before {
+  content: "\1F50A";
+}
+
+.sound.soundOff::before {
+  content: "\1F507";
 }

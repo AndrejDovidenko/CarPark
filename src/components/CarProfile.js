@@ -3,6 +3,7 @@ import { generateSvg } from "../constants/generateSVG";
 import ModalWindowNoteMod from "./ModalWindowNoteMod";
 import Firebase from "./FirebaseAPI";
 import NoteList from "./NoteList";
+import { click, modal } from "../constants/constants";
 
 class CarProfileView {
   constructor() {
@@ -21,7 +22,7 @@ class CarProfileView {
     <p>Год:<span> ${data.year}</span></p>
     <p>Цвет:<span> ${data.color}</span></p>
     <p>Регистрационный номер:<span> ${data.carPlate}</span></p>
-    <p>Пробег:<span> ${data.mileage}</span></p>
+    <p>Пробег:<span class="mileage-info"> ${data.mileage}</span></p>
     </div>
     <div class="car-img">${this.carSvg.outerHTML}</div>
     </div>
@@ -47,6 +48,11 @@ class CarProfileView {
 
   openModalWindow() {
     ModalWindowNoteMod.view.showModalWindow();
+  }
+
+  renderUpdateMileage(data) {
+    const mileage = document.querySelector(".mileage-info");
+    mileage.textContent = data.mileage;
   }
 
   renderNoteList(profileId) {
@@ -133,12 +139,21 @@ class CarProfileController {
       switch (clickButton) {
         case history:
           this.model.renderNoteList(this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            click.play();
+          }
           break;
         case installedParts:
           this.model.showParts(this.profileId);
+          if (!document.querySelector(".soundOff")) {
+            click.play();
+          }
           break;
         case addNote:
           this.model.openModalWindow();
+          if (!document.querySelector(".soundOff")) {
+            modal.play();
+          }
           break;
       }
     }

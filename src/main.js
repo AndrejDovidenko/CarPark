@@ -7,6 +7,7 @@ import About from "./pages/About.js";
 import Statistics from "./pages/Statistics.js";
 import Navbar from "./components/NavBar.js";
 import ContentContainer from "./components/ContentContainer.js";
+import { sound, click, modal, open } from "./constants/constants.js";
 
 const components = {
   navbar: Navbar,
@@ -49,6 +50,10 @@ class MainView {
     this.contentContainer.innerHTML = routes[routeName].render();
     this.updateButtons(routes[routeName].id);
   }
+
+  toggleClass(item, name) {
+    item.classList.toggle(name);
+  }
 }
 
 class MainModel {
@@ -58,6 +63,10 @@ class MainModel {
 
   updateState(_pageName) {
     this.view.renderContent(_pageName);
+  }
+
+  toggleClass(item, name) {
+    this.view.toggleClass(item, name);
   }
 }
 
@@ -75,15 +84,30 @@ class MainController {
       .querySelector(".main-menu__list")
       .addEventListener("click", (event) => {
         event.preventDefault();
+        if (!document.querySelector(".soundOff")) {
+          open.play();
+        }
         window.location.hash = event.target.getAttribute("href");
-
         this.updateState();
       });
 
     this.mainContainer.addEventListener("click", (event) => {
       const exit = event.target.closest(".exit");
+      const soundIcon = event.target.closest(".sound");
       if (exit) {
         Firebase.logOut();
+        if (!document.querySelector(".soundOff")) {
+          open.play();
+        }
+      }
+
+      if (soundIcon) {
+        this.model.toggleClass(soundIcon, "soundOff");
+        // if (soundIcon.classList.contains("soundOff")) {
+        //   sound = false;
+        // } else {
+        //   sound = true;
+        // }
       }
     });
 
